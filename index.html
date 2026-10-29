@@ -16,7 +16,7 @@
       theme: {
         extend: {
           colors: {
-            jarvis: { dark: '#070c14', card: 'rgba(13, 24, 38, 0.92)', cyan: '#00f0ff', amber: '#ffb800', red: '#ff3366', green: '#00ff88' }
+            jarvis: { dark: '#070c14', card: 'rgba(13, 24, 38, 0.94)', cyan: '#00f0ff', amber: '#ffb800', red: '#ff3366', green: '#00ff88' }
           },
           fontFamily: { orbitron: ['Orbitron', 'sans-serif'], rajdhani: ['Rajdhani', 'sans-serif'] }
         }
@@ -31,7 +31,7 @@
 </head>
 <body class="bg-jarvis-dark text-slate-100 min-h-screen flex flex-col select-none overflow-x-hidden">
 
-  <!-- ================= TELA DE LOGIN MESTRE ================= -->
+  <!-- ================= TELA DE LOGIN SEGURA (CAMPOS LIMPOS) ================= -->
   <div id="authScreen" class="min-h-screen flex items-center justify-center p-4">
     <div class="w-full max-w-sm bg-jarvis-card border border-jarvis-cyan/30 rounded-2xl p-6 shadow-2xl backdrop-blur-xl relative">
       <div class="text-center mb-6">
@@ -39,27 +39,27 @@
           <svg class="w-8 h-8 text-jarvis-cyan animate-pulse" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"></path></svg>
         </div>
         <h1 class="font-orbitron text-xl font-black tracking-widest text-jarvis-cyan">J.A.R.V.I.S.</h1>
-        <p class="text-[10px] text-slate-400 uppercase tracking-widest mt-1">Acesso Restrito • Sistema Privado</p>
+        <p class="text-[10px] text-slate-400 uppercase tracking-widest mt-1">ACESSO RESTRITO • SISTEMA PRIVADO</p>
       </div>
 
       <div id="authAlert" class="hidden mb-4 p-2.5 rounded-lg text-xs border"></div>
 
-      <form onsubmit="handleLogin(event)" class="space-y-4">
+      <form id="loginForm" onsubmit="handleLogin(event)" class="space-y-4">
         <div>
-          <label class="text-[11px] font-bold text-slate-400 block mb-1">E-mail</label>
-          <input id="loginEmail" type="email" required value="italo17092@gmail.com" class="w-full bg-black/50 border border-slate-700 rounded-lg px-3 py-2.5 text-sm text-white focus:outline-none focus:border-jarvis-cyan" />
+          <label class="text-[11px] font-bold text-slate-400 block mb-1">E-mail Cadastrado</label>
+          <input id="loginEmail" type="email" required placeholder="seu@email.com" class="w-full bg-black/50 border border-slate-700 rounded-lg px-3 py-2.5 text-sm text-white focus:outline-none focus:border-jarvis-cyan" />
         </div>
         <div>
-          <label class="text-[11px] font-bold text-slate-400 block mb-1">Senha</label>
-          <input id="loginPass" type="password" required value="YS@bella1310%" class="w-full bg-black/50 border border-slate-700 rounded-lg px-3 py-2.5 text-sm text-white focus:outline-none focus:border-jarvis-cyan" />
+          <label class="text-[11px] font-bold text-slate-400 block mb-1">Senha de Acesso</label>
+          <input id="loginPass" type="password" required placeholder="••••••••" class="w-full bg-black/50 border border-slate-700 rounded-lg px-3 py-2.5 text-sm text-white focus:outline-none focus:border-jarvis-cyan" />
         </div>
-        <button type="submit" class="w-full bg-jarvis-cyan text-black font-orbitron font-bold py-3 rounded-lg text-sm hover:shadow-[0_0_15px_rgba(0,240,255,0.5)] transition active:scale-95">
+        <button type="submit" id="loginBtn" class="w-full bg-jarvis-cyan text-black font-orbitron font-bold py-3 rounded-lg text-sm hover:shadow-[0_0_15px_rgba(0,240,255,0.5)] transition active:scale-95">
           ENTRAR NO SISTEMA
         </button>
       </form>
 
-      <div class="mt-6 text-center text-[11px] text-slate-500">
-        🔒 Cadastro público fechado. Entrada apenas por convite do Mestre.
+      <div class="mt-6 text-center text-[10px] text-slate-500">
+        🔒 Acesso estritamente privado. Apenas usuários autorizados pelo Mestre.
       </div>
     </div>
   </div>
@@ -74,7 +74,7 @@
         <div>
           <div class="flex items-center gap-1.5">
             <h1 class="font-orbitron font-extrabold text-sm tracking-widest text-jarvis-cyan leading-none" id="userNameHeader">Italo Nobre</h1>
-            <span class="text-[8px] px-1 py-0.2 bg-jarvis-cyan/20 border border-jarvis-cyan text-jarvis-cyan rounded font-bold">MESTRE</span>
+            <span class="text-[8px] px-1 py-0.2 bg-jarvis-cyan/20 border border-jarvis-cyan text-jarvis-cyan rounded font-bold" id="userRoleBadge">MESTRE</span>
           </div>
           <p class="text-[9px] text-slate-400" id="userEmailHeader">italo17092@gmail.com</p>
         </div>
@@ -100,15 +100,15 @@
       </div>
     </div>
 
-    <!-- ABA 1: CONVERSA / CHAT -->
+    <!-- ABA 1: CHAT -->
     <div id="tabChat" class="flex-1 overflow-hidden flex flex-col p-3">
       <div id="chatMessages" class="flex-1 overflow-y-auto space-y-3 pr-1 scrollbar-none">
         <div class="h-full flex flex-col items-center justify-center text-center p-6 text-slate-500">
           <div class="w-16 h-16 border border-jarvis-cyan/30 rounded-full flex items-center justify-center mb-3 animate-pulse">
             <svg class="w-8 h-8 text-jarvis-cyan" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"></path></svg>
           </div>
-          <h3 class="font-orbitron text-xs font-bold text-jarvis-cyan">SISTEMA MESTRE ONLINE</h3>
-          <p class="text-[11px] text-slate-400 mt-1 max-w-xs">Olá, Italo! O seu ambiente de comando está operacional e isolado. Suas IAs estão prontas.</p>
+          <h3 class="font-orbitron text-xs font-bold text-jarvis-cyan">JARVIS OPERACIONAL</h3>
+          <p class="text-[11px] text-slate-400 mt-1 max-w-xs">Olá, Italo! O seu ambiente de comando está online e 100% isolado. Em que posso te ajudar?</p>
         </div>
       </div>
 
@@ -121,7 +121,7 @@
           <button id="voiceBtn" onclick="toggleVoice()" class="p-3 bg-black/40 border border-slate-700 rounded-xl text-jarvis-cyan">
             <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11a7 7 0 01-7 7m0 0a7 7 0 01-7-7m7 7v4m0 0H8m4 0h4m-4-8a3 3 0 01-3-3V5a3 3 0 116 0v6a3 3 0 01-3 3z"></path></svg>
           </button>
-          <input id="promptInput" type="text" class="flex-1 bg-black/50 border border-slate-700 rounded-xl px-4 py-3 text-xs text-white focus:outline-none focus:border-jarvis-cyan" placeholder="Ordem ou pergunta..." onkeydown="if(event.key==='Enter') sendMessage()" />
+          <input id="promptInput" type="text" class="flex-1 bg-black/50 border border-slate-700 rounded-xl px-4 py-3 text-xs text-white focus:outline-none focus:border-jarvis-cyan" placeholder="Digite uma ordem ou pergunta..." onkeydown="if(event.key==='Enter') sendMessage()" />
           <button onclick="sendMessage()" class="p-3 bg-jarvis-cyan text-black rounded-xl font-bold">
             <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8"></path></svg>
           </button>
@@ -129,12 +129,12 @@
       </div>
     </div>
 
-    <!-- ABA 2: PROTOCOLOS & MISSÕES -->
+    <!-- ABA 2: PROTOCOLOS & MISSÕES (TAREFAS) -->
     <div id="tabTasks" class="hidden flex-1 overflow-hidden flex flex-col p-3">
       <div class="flex items-center justify-between pb-2 mb-3 border-b border-slate-800">
         <div>
           <h2 class="font-orbitron font-bold text-jarvis-cyan text-sm">PROTOCOLOS & MISSÕES</h2>
-          <p class="text-[10px] text-slate-400">Tarefas exclusivas da sua conta</p>
+          <p class="text-[10px] text-slate-400">Tarefas e instruções sincronizadas com seu banco</p>
         </div>
       </div>
       <div class="flex gap-2 mb-3">
@@ -151,38 +151,30 @@
       </div>
     </div>
 
-    <!-- ABA 3: GERENCIAR CONVITES (SÓ VOCÊ VÊ) -->
+    <!-- ABA 3: CONVITES (ÁREA EXCLUSIVA DO MESTRE) -->
     <div id="tabInvites" class="hidden flex-1 overflow-hidden flex flex-col p-3">
       <div class="pb-2 mb-3 border-b border-slate-800">
-        <h2 class="font-orbitron font-bold text-jarvis-cyan text-sm">ACESSO FECHADO: CONVITES</h2>
-        <p class="text-[10px] text-slate-400">Apenas você pode liberar acesso para novos membros.</p>
+        <h2 class="font-orbitron font-bold text-amber-400 text-sm">CENTRAL DE CONVITES DO MESTRE</h2>
+        <p class="text-[10px] text-slate-400">Apenas você pode autorizar novos membros para acessar o sistema.</p>
       </div>
 
-      <div class="bg-black/40 border border-slate-800 p-3 rounded-xl mb-4">
-        <label class="text-[11px] font-bold text-slate-300 block mb-1">E-mail do Convidado</label>
+      <div class="bg-black/40 border border-amber-500/30 p-3.5 rounded-xl mb-4">
+        <label class="text-[11px] font-bold text-slate-200 block mb-1">E-mail do Novo Convidado</label>
         <div class="flex gap-2">
-          <input id="inviteEmailInput" type="email" placeholder="amigo@email.com" class="flex-1 bg-black/50 border border-slate-700 rounded-lg px-3 py-2 text-xs text-white focus:outline-none focus:border-jarvis-cyan" />
-          <button onclick="generateInvite()" class="bg-jarvis-cyan text-black font-orbitron font-bold px-3 py-2 rounded-lg text-xs">Gerar Link</button>
+          <input id="inviteEmailInput" type="email" placeholder="email@amigo.com" class="flex-1 bg-black/50 border border-slate-700 rounded-lg px-3 py-2 text-xs text-white focus:outline-none focus:border-jarvis-cyan" />
+          <button onclick="generateInvite()" class="bg-amber-400 text-black font-orbitron font-bold px-3 py-2 rounded-lg text-xs">Gerar Acesso</button>
         </div>
       </div>
 
       <div id="inviteResult" class="hidden mb-4 p-3 bg-jarvis-green/10 border border-jarvis-green rounded-xl text-xs">
-        <div class="text-jarvis-green font-bold mb-1">Convite Criado com Sucesso!</div>
-        <p class="text-slate-300 mb-2">Envie este link para a pessoa acessar com a senha provisória:</p>
-        <div class="p-2 bg-black/60 rounded border border-slate-700 font-mono text-[10px] break-all select-all text-jarvis-cyan" id="inviteLinkText"></div>
+        <div class="text-jarvis-green font-bold mb-1">Acesso Autorizado pelo Mestre!</div>
+        <p class="text-slate-300 mb-2">Envie estas credenciais para o seu convidado entrar:</p>
+        <div class="p-2.5 bg-black/60 rounded border border-slate-700 font-mono text-[10px] break-all select-all text-jarvis-cyan" id="inviteLinkText"></div>
       </div>
 
       <div class="flex-1 overflow-y-auto pr-1">
         <h3 class="text-xs font-bold text-slate-400 mb-2 uppercase tracking-wider">Membros Autorizados</h3>
-        <div class="space-y-2" id="authorizedUsersList">
-          <div class="flex items-center justify-between p-2.5 bg-black/40 border border-jarvis-cyan/30 rounded-xl">
-            <div>
-              <div class="text-xs font-bold text-white flex items-center gap-1.5">Italo Nobre <span class="text-[8px] bg-jarvis-cyan text-black px-1 rounded font-black">MESTRE</span></div>
-              <div class="text-[10px] text-slate-400">italo17092@gmail.com</div>
-            </div>
-            <span class="text-[10px] text-jarvis-green">Ativo</span>
-          </div>
-        </div>
+        <div class="space-y-2" id="authorizedUsersList"></div>
       </div>
     </div>
 
@@ -235,7 +227,7 @@
             <label class="text-[10px] font-bold text-slate-300">Autenticação por Celular / SMS</label>
             <span class="text-[9px] text-jarvis-green font-bold">ATIVADA</span>
           </div>
-          <input id="userPhoneInput" type="tel" value="+55 (92) 99123-4567" placeholder="+55 DD 9XXXX-XXXX" class="w-full bg-black/50 border border-slate-700 rounded-lg px-3 py-1.5 text-xs text-white focus:outline-none focus:border-jarvis-cyan mb-2" />
+          <input id="userPhoneInput" type="tel" placeholder="+55 DD 9XXXX-XXXX" class="w-full bg-black/50 border border-slate-700 rounded-lg px-3 py-1.5 text-xs text-white focus:outline-none focus:border-jarvis-cyan mb-2" />
           <button onclick="savePhone()" class="w-full bg-slate-800 hover:bg-slate-700 text-slate-200 py-1.5 rounded-lg text-[10px] font-bold">Salvar Celular</button>
         </div>
 
@@ -262,13 +254,20 @@
 
   <script>
     const MASTER_EMAIL = "italo17092@gmail.com";
-    const MASTER_PASS = "YS@bella1310%";
+    const MASTER_HASH = "7dd7f0bb4dbd14eaf81535e8a690d56bb81e1c67e8337c4e60b82a9da8152eb2";
     const MASTER_NAME = "Italo Nobre";
 
     let currentModel = 'gemini';
     let currentUser = null;
     let isListening = false;
     let speechRec = null;
+
+    async function hashText(text) {
+      const msgUint8 = new TextEncoder().encode(text);
+      const hashBuffer = await crypto.subtle.digest('SHA-256', msgUint8);
+      const hashArray = Array.from(new Uint8Array(hashBuffer));
+      return hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
+    }
 
     window.addEventListener('DOMContentLoaded', () => {
       const savedUser = localStorage.getItem('jarvis_session');
@@ -298,21 +297,31 @@
       loadKeys(); loadTasks();
     }
 
-    function handleLogin(e) {
-      e.preventDefault();
+    async function handleLogin(e) {
+      if (e) e.preventDefault();
       const email = document.getElementById('loginEmail').value.trim();
       const pass = document.getElementById('loginPass').value.trim();
       const alertBox = document.getElementById('authAlert');
 
-      // Login Mestre Direto
-      if (email.toLowerCase() === MASTER_EMAIL.toLowerCase() && pass === (localStorage.getItem('jarvis_custom_pass_' + MASTER_EMAIL) || MASTER_PASS)) {
+      if (!email || !pass) {
+        alertBox.className = "mb-4 p-2.5 rounded-lg text-xs border bg-jarvis-red/20 border-jarvis-red text-jarvis-red";
+        alertBox.innerText = "Por favor, digite seu e-mail e sua senha.";
+        alertBox.classList.remove('hidden');
+        return;
+      }
+
+      const passHash = await hashText(pass);
+      const customHash = localStorage.getItem('jarvis_hash_' + MASTER_EMAIL);
+
+      // Verificação Criptográfica do Mestre
+      if (email.toLowerCase() === MASTER_EMAIL.toLowerCase() && (passHash === (customHash || MASTER_HASH))) {
         currentUser = { name: MASTER_NAME, email: MASTER_EMAIL, role: 'master' };
         localStorage.setItem('jarvis_session', JSON.stringify(currentUser));
         showApp();
         return;
       }
 
-      // Login Convidados
+      // Verificação de Convidados Autorizados pelo Mestre
       const invited = JSON.parse(localStorage.getItem('jarvis_invited_users') || '[]');
       const match = invited.find(u => u.email.toLowerCase() === email.toLowerCase() && u.pass === pass);
       if (match) {
@@ -330,6 +339,8 @@
     function handleLogout() {
       localStorage.removeItem('jarvis_session');
       currentUser = null;
+      document.getElementById('loginEmail').value = '';
+      document.getElementById('loginPass').value = '';
       showAuth();
     }
 
@@ -339,7 +350,7 @@
       document.getElementById('tabInvites').classList.toggle('hidden', tab !== 'invites');
       document.getElementById('navChatBtn').className = tab === 'chat' ? 'flex flex-col items-center gap-1 text-jarvis-cyan' : 'flex flex-col items-center gap-1 text-slate-500';
       document.getElementById('navTasksBtn').className = tab === 'tasks' ? 'flex flex-col items-center gap-1 text-jarvis-cyan' : 'flex flex-col items-center gap-1 text-slate-500';
-      document.getElementById('navInvitesBtn').className = tab === 'invites' ? 'flex flex-col items-center gap-1 text-jarvis-cyan' : 'flex flex-col items-center gap-1 text-slate-500';
+      document.getElementById('navInvitesBtn').className = tab === 'invites' ? 'flex flex-col items-center gap-1 text-amber-400' : 'flex flex-col items-center gap-1 text-slate-500';
       if (tab === 'tasks') loadTasks();
       if (tab === 'invites') renderInvitedList();
     }
@@ -375,7 +386,10 @@
     function addBubble(content, role, badge = '') {
       const container = document.getElementById('chatMessages');
       const wrap = document.createElement('div');
-      wrap.className = `flex flex-col ${role === 'user' ? 'items-end' : 'items-start'}`; const header = document.createElement('div'); header.className = 'text-[9px] uppercase font-bold text-slate-400 mb-0.5 px-1'; header.innerText = role === 'user' ? (currentUser.name \vert{}\vert{} 'Você') : `JARVIS [${badge}]`;
+      wrap.className = `flex flex-col ${role === 'user' ? 'items-end' : 'items-start'}`;
+      const header = document.createElement('div');
+      header.className = 'text-[9px] uppercase font-bold text-slate-400 mb-0.5 px-1';
+      header.innerText = role === 'user' ? (currentUser.name || 'Você') : `JARVIS [${badge}]`;
       const bubble = document.createElement('div');
       bubble.className = role === 'user'
         ? 'max-w-[85%] p-3 rounded-2xl rounded-br-none bg-jarvis-cyan/20 border border-jarvis-cyan/40 text-xs text-white'
@@ -394,7 +408,32 @@
 
       if (model === 'gemini') {
         if (!geminiKey) return "⚠️ Chave do Google Gemini não configurada. Toque no ícone de perfil no topo para inserir sua chave.";
-        const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${geminiKey}`; const res = await fetch(url, { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify({ contents: [{ parts: [{ text: prompt }] }] }) }); const data = await res.json(); return data.candidates?.[0]?.content?.parts?.[0]?.text \vert{}\vert{} "Sem resposta do Gemini."; }  if (model === 'claude') { if (!claudeKey) return "⚠️ Chave do Claude não configurada. Toque no perfil para cadastrar."; const res = await fetch("https://api.anthropic.com/v1/messages", { method: "POST", headers: { "Content-Type": "application/json", "x-api-key": claudeKey, "anthropic-version": "2023-06-01", "dangerously-allow-browser": "true" }, body: JSON.stringify({ model: "claude-3-5-haiku-20241022", max_tokens: 600, messages: [{ role: "user", content: prompt }] }) }); const data = await res.json(); return data.content?.[0]?.text \vert{}\vert{} "Sem resposta do Claude."; }  if (model === 'openai') { if (!openaiKey) return "⚠️ Chave da OpenAI não configurada. Toque no perfil para cadastrar."; const res = await fetch("https://api.openai.com/v1/chat/completions", { method: "POST", headers: { "Content-Type": "application/json", "Authorization": `Bearer ${openaiKey}` },
+        const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${geminiKey}`;
+        const res = await fetch(url, {
+          method: 'POST',
+          headers: {'Content-Type': 'application/json'},
+          body: JSON.stringify({ contents: [{ parts: [{ text: prompt }] }] })
+        });
+        const data = await res.json();
+        return data.candidates?.[0]?.content?.parts?.[0]?.text || "Sem resposta do Gemini.";
+      }
+
+      if (model === 'claude') {
+        if (!claudeKey) return "⚠️ Chave do Claude não configurada. Toque no perfil para cadastrar.";
+        const res = await fetch("https://api.anthropic.com/v1/messages", {
+          method: "POST",
+          headers: { "Content-Type": "application/json", "x-api-key": claudeKey, "anthropic-version": "2023-06-01", "dangerously-allow-browser": "true" },
+          body: JSON.stringify({ model: "claude-3-5-haiku-20241022", max_tokens: 600, messages: [{ role: "user", content: prompt }] })
+        });
+        const data = await res.json();
+        return data.content?.[0]?.text || "Sem resposta do Claude.";
+      }
+
+      if (model === 'openai') {
+        if (!openaiKey) return "⚠️ Chave da OpenAI não configurada. Toque no perfil para cadastrar.";
+        const res = await fetch("https://api.openai.com/v1/chat/completions", {
+          method: "POST",
+          headers: { "Content-Type": "application/json", "Authorization": `Bearer ${openaiKey}` },
           body: JSON.stringify({ model: "gpt-4o-mini", messages: [{ role: "user", content: prompt }], max_tokens: 600 })
         });
         const data = await res.json();
@@ -481,7 +520,8 @@
       if (existing) { existing.pass = tempPass; } else { invited.push({ email, pass: tempPass, name: email.split('@')[0] }); }
       localStorage.setItem('jarvis_invited_users', JSON.stringify(invited));
 
-      const inviteLink = `${window.location.origin}${window.location.pathname}`; document.getElementById('inviteLinkText').innerText = `Acesse: ${inviteLink}\nE-mail: ${email}\nSenha Provisória: ${tempPass}`;
+      const inviteLink = `${window.location.origin}${window.location.pathname}`;
+      document.getElementById('inviteLinkText').innerText = `Acesse o link do app:\n${inviteLink}\n\nE-mail liberado: ${email}\nSenha de Acesso: ${tempPass}`;
       document.getElementById('inviteResult').classList.remove('hidden');
       document.getElementById('inviteEmailInput').value = '';
       renderInvitedList();
@@ -536,10 +576,11 @@
       reader.readAsDataURL(file);
     }
 
-    function changePassword() {
+    async function changePassword() {
       const newP = document.getElementById('newPasswordInput').value.trim();
       if (!newP) return alert("Digite a nova senha.");
-      localStorage.setItem('jarvis_custom_pass_' + currentUser.email, newP);
+      const newHash = await hashText(newP);
+      localStorage.setItem('jarvis_hash_' + currentUser.email, newHash);
       alert("Senha mestre atualizada com sucesso!");
       document.getElementById('newPasswordInput').value = '';
     }
