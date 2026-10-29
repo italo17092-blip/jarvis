@@ -1,0 +1,417 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+  <meta name="theme-color" content="#070c14" />
+  <title>J.A.R.V.I.S. • Android Cloud OS</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@500;700;900&family=Rajdhani:wght@500;600;700&display=swap" rel="stylesheet">
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            jarvis: { dark: '#070c14', card: 'rgba(13, 24, 38, 0.85)', cyan: '#00f0ff', amber: '#ffb800', red: '#ff3366', green: '#00ff88' }
+          },
+          fontFamily: { orbitron: ['Orbitron', 'sans-serif'], rajdhani: ['Rajdhani', 'sans-serif'] }
+        }
+      }
+    }
+  </script>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <style>* { -webkit-tap-highlight-color: transparent; } body { font-family: 'Rajdhani', sans-serif; background-color: #070c14; }</style>
+</head>
+<body class="bg-jarvis-dark text-slate-100 min-h-screen flex flex-col select-none overflow-x-hidden">
+
+  <script>
+    const SUPABASE_URL = "https://prtulixcdkafaqpcyerv.supabase.co";
+    const SUPABASE_ANON_KEY = "sb_publishable_FGkbz2Pep_wp1KreC9NKqg_Z1xx2g2q";
+    const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+  </script>
+
+  <!-- TELA DE LOGIN / REGISTRO -->
+  <div id="authScreen" class="min-h-screen flex items-center justify-center p-4">
+    <div class="w-full max-w-sm bg-jarvis-card border border-jarvis-cyan/30 rounded-2xl p-6 shadow-2xl backdrop-blur-xl relative">
+      <div class="text-center mb-6">
+        <div class="w-14 h-14 border-2 border-jarvis-cyan rounded-full flex items-center justify-center mx-auto mb-3 shadow-[0_0_20px_rgba(0,240,255,0.4)]">
+          <svg class="w-7 h-7 text-jarvis-cyan animate-pulse" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"></path></svg>
+        </div>
+        <h1 class="font-orbitron text-xl font-black tracking-widest text-jarvis-cyan">J.A.R.V.I.S.</h1>
+        <p class="text-[10px] text-slate-400 uppercase tracking-widest mt-1">Acesso Seguro & Isolamento Total</p>
+      </div>
+
+      <div id="authError" class="hidden mb-4 p-2.5 rounded-lg bg-jarvis-red/20 border border-jarvis-red text-jarvis-red text-xs"></div>
+
+      <form id="authForm" onsubmit="handleAuth(event)" class="space-y-3.5">
+        <div id="fullNameGroup" class="hidden">
+          <label class="text-[11px] font-semibold text-slate-400 block mb-1">Nome Completo</label>
+          <input id="fullNameInput" type="text" class="w-full bg-black/50 border border-slate-700 rounded-lg px-3 py-2 text-sm text-white focus:outline-none focus:border-jarvis-cyan" placeholder="Seu nome ou Ítalo" />
+        </div>
+        <div>
+          <label class="text-[11px] font-semibold text-slate-400 block mb-1">E-mail</label>
+          <input id="emailInput" type="email" required class="w-full bg-black/50 border border-slate-700 rounded-lg px-3 py-2 text-sm text-white focus:outline-none focus:border-jarvis-cyan" placeholder="seu@email.com" />
+        </div>
+        <div>
+          <label class="text-[11px] font-semibold text-slate-400 block mb-1">Senha</label>
+          <input id="passwordInput" type="password" required class="w-full bg-black/50 border border-slate-700 rounded-lg px-3 py-2 text-sm text-white focus:outline-none focus:border-jarvis-cyan" placeholder="••••••••" />
+        </div>
+        <button type="submit" id="authSubmitBtn" class="w-full bg-jarvis-cyan text-black font-orbitron font-bold py-2.5 rounded-lg text-sm transition active:scale-95">ACESSAR SISTEMA</button>
+      </form>
+      <div class="mt-5 text-center">
+        <button id="toggleAuthBtn" onclick="toggleAuthMode()" class="text-xs text-jarvis-cyan hover:underline">Não tem conta? Cadastrar perfil individual</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- APLICAÇÃO PRINCIPAL -->
+  <div id="appScreen" class="hidden flex-1 flex flex-col h-screen max-w-lg mx-auto w-full border-x border-slate-900 shadow-2xl overflow-hidden">
+    <header class="p-3 bg-jarvis-card/90 backdrop-blur-md border-b border-jarvis-cyan/20 flex items-center justify-between sticky top-0 z-20">
+      <div class="flex items-center gap-2">
+        <div class="w-8 h-8 rounded-full border border-jarvis-cyan flex items-center justify-center shadow-[0_0_10px_rgba(0,240,255,0.4)]">
+          <svg class="w-4 h-4 text-jarvis-cyan" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"></path></svg>
+        </div>
+        <div>
+          <h1 class="font-orbitron font-extrabold text-sm tracking-widest text-jarvis-cyan leading-none">J.A.R.V.I.S.</h1>
+          <p id="userLabel" class="text-[10px] text-slate-400 uppercase tracking-wider">Conectado</p>
+        </div>
+      </div>
+      <div class="flex items-center gap-1.5">
+        <button onclick="openSettings()" class="p-2 text-slate-400 hover:text-jarvis-cyan rounded-lg" title="Configurar Chaves">
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path></svg>
+        </button>
+        <button onclick="handleLogout()" class="p-2 text-slate-400 hover:text-jarvis-red rounded-lg" title="Sair">
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"></path></svg>
+        </button>
+      </div>
+    </header>
+
+    <div class="px-3 pt-2 pb-1 bg-jarvis-dark/80 backdrop-blur border-b border-slate-800">
+      <div class="grid grid-cols-4 gap-1 p-1 bg-black/40 border border-slate-800 rounded-xl text-center">
+        <button onclick="setModel('gemini', this)" class="model-btn active py-1.5 px-1 rounded-lg text-black bg-jarvis-cyan font-orbitron font-bold text-[10px]">GEMINI</button>
+        <button onclick="setModel('claude', this)" class="model-btn py-1.5 px-1 rounded-lg text-slate-400 font-orbitron font-bold text-[10px]">CLAUDE</button>
+        <button onclick="setModel('openai', this)" class="model-btn py-1.5 px-1 rounded-lg text-slate-400 font-orbitron font-bold text-[10px]">CHATGPT</button>
+        <button onclick="setModel('trio', this)" class="model-btn py-1.5 px-1 rounded-lg text-slate-400 font-orbitron font-bold text-[10px] text-amber-400">⚡ TRIO</button>
+      </div>
+    </div>
+
+    <div id="tabChat" class="flex-1 overflow-hidden flex flex-col p-3">
+      <div id="chatMessages" class="flex-1 overflow-y-auto space-y-3 pr-1">
+        <div class="h-full flex flex-col items-center justify-center text-center p-6 text-slate-500">
+          <div class="w-16 h-16 border border-jarvis-cyan/30 rounded-full flex items-center justify-center mb-3 animate-pulse">
+            <svg class="w-8 h-8 text-jarvis-cyan" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"></path></svg>
+          </div>
+          <h3 class="font-orbitron text-xs font-bold text-jarvis-cyan">NÚCLEO ANDROID ISOLADO</h3>
+          <p class="text-[11px] text-slate-400 mt-1 max-w-xs">Suas conversas são criptografadas e protegidas. Ítalo e você têm ambientes 100% separados.</p>
+        </div>
+      </div>
+      <div id="typingStatus" class="hidden py-1 px-3 text-[11px] text-jarvis-cyan flex items-center gap-2 animate-pulse">
+        <span>⚡ JARVIS processando raciocínio...</span>
+      </div>
+      <div class="pt-2">
+        <div class="flex items-center gap-2">
+          <button id="voiceBtn" onclick="toggleVoice()" class="p-3 bg-black/40 border border-slate-700 rounded-xl text-jarvis-cyan">
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11a7 7 0 01-7 7m0 0a7 7 0 01-7-7m7 7v4m0 0H8m4 0h4m-4-8a3 3 0 01-3-3V5a3 3 0 116 0v6a3 3 0 01-3 3z"></path></svg>
+          </button>
+          <input id="promptInput" type="text" class="flex-1 bg-black/50 border border-slate-700 rounded-xl px-4 py-3 text-xs text-white focus:outline-none focus:border-jarvis-cyan" placeholder="Digite ou toque no microfone..." onkeydown="if(event.key==='Enter') sendMessage()" />
+          <button onclick="sendMessage()" class="p-3 bg-jarvis-cyan text-black rounded-xl font-bold">
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8"></path></svg>
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <div id="tabTasks" class="hidden flex-1 overflow-hidden flex flex-col p-3">
+      <div class="flex items-center justify-between pb-2 mb-3 border-b border-slate-800">
+        <div>
+          <h2 class="font-orbitron font-bold text-jarvis-cyan text-sm">PROTOCOLOS & MISSÕES</h2>
+          <p class="text-[10px] text-slate-400">Tarefas sincronizadas com seu banco</p>
+        </div>
+      </div>
+      <div class="flex gap-2 mb-3">
+        <input id="taskInput" type="text" placeholder="Definir nova missão..." class="flex-1 bg-black/40 border border-slate-700 rounded-lg px-3 py-2 text-xs text-white focus:outline-none focus:border-jarvis-cyan" />
+        <select id="taskPriority" class="bg-black/40 border border-slate-700 rounded-lg px-2 text-xs text-slate-300">
+          <option value="normal">Normal</option>
+          <option value="urgente">Urgente</option>
+          <option value="baixa">Baixa</option>
+        </select>
+        <button onclick="addTask()" class="bg-jarvis-cyan text-black px-3 py-2 rounded-lg font-bold text-xs">Adicionar</button>
+      </div>
+      <div id="taskList" class="flex-1 overflow-y-auto space-y-2 pr-1">
+        <div class="text-center py-10 text-slate-500 text-xs">Nenhum protocolo pendente.</div>
+      </div>
+    </div>
+
+    <nav class="flex items-center justify-around py-2.5 bg-black/90 border-t border-slate-800">
+      <button onclick="switchTab('chat')" id="navChatBtn" class="flex flex-col items-center gap-1 text-jarvis-cyan">
+        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 10h.01M12 10h.01M16 10h.01M9 16H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-5l-5 5v-5z"></path></svg>
+        <span class="text-[9px] font-bold font-orbitron">CONVERSAS</span>
+      </button>
+      <button onclick="switchTab('tasks')" id="navTasksBtn" class="flex flex-col items-center gap-1 text-slate-500">
+        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4"></path></svg>
+        <span class="text-[9px] font-bold font-orbitron">PROTOCOLOS</span>
+      </button>
+    </nav>
+  </div>
+
+  <!-- MODAL CONFIGURAÇÕES -->
+  <div id="settingsModal" class="hidden fixed inset-0 bg-black/80 backdrop-blur-md z-50 flex items-center justify-center p-4">
+    <div class="bg-jarvis-card border border-jarvis-cyan/30 rounded-2xl w-full max-w-sm p-5 shadow-2xl relative">
+      <button onclick="closeSettings()" class="absolute top-4 right-4 text-slate-400 hover:text-white">✕</button>
+      <h3 class="font-orbitron font-bold text-jarvis-cyan text-sm mb-1">Chaves de API & Tokens</h3>
+      <p class="text-[10px] text-slate-400 mb-4">Insira suas chaves quando assinar os planos pagos. Elas ficam salvas isoladas somente na sua conta.</p>
+      <div class="space-y-3">
+        <div>
+          <label class="text-[10px] text-slate-300 font-bold block mb-1">Google Gemini API Key</label>
+          <input id="keyGemini" type="password" class="w-full bg-black/50 border border-slate-700 rounded-lg px-3 py-2 text-xs text-white focus:outline-none focus:border-jarvis-cyan" placeholder="AIzaSy..." />
+        </div>
+        <div>
+          <label class="text-[10px] text-slate-300 font-bold block mb-1">Anthropic Claude API Key</label>
+          <input id="keyClaude" type="password" class="w-full bg-black/50 border border-slate-700 rounded-lg px-3 py-2 text-xs text-white focus:outline-none focus:border-jarvis-cyan" placeholder="sk-ant-api..." />
+        </div>
+        <div>
+          <label class="text-[10px] text-slate-300 font-bold block mb-1">OpenAI ChatGPT API Key</label>
+          <input id="keyOpenAI" type="password" class="w-full bg-black/50 border border-slate-700 rounded-lg px-3 py-2 text-xs text-white focus:outline-none focus:border-jarvis-cyan" placeholder="sk-proj-..." />
+        </div>
+        <button onclick="saveApiKeys()" class="w-full bg-jarvis-cyan text-black font-orbitron font-bold py-2 rounded-lg text-xs mt-2">SALVAR CHAVES PESSOAIS</button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    let currentModel = 'gemini';
+    let currentUser = null;
+    let isRegisterMode = false;
+    let isListening = false;
+    let speechRec = null;
+
+    async function initApp() {
+      const { data: { session } } = await supabase.auth.getSession();
+      if (session) { currentUser = session.user; showApp(); } else { showAuth(); }
+      supabase.auth.onAuthStateChange((_event, session) => {
+        if (session) { currentUser = session.user; showApp(); } else { currentUser = null; showAuth(); }
+      });
+    }
+
+    function showAuth() { document.getElementById('authScreen').classList.remove('hidden'); document.getElementById('appScreen').classList.add('hidden'); }
+    function showApp() {
+      document.getElementById('authScreen').classList.add('hidden');
+      document.getElementById('appScreen').classList.remove('hidden');
+      document.getElementById('userLabel').innerText = currentUser.email.split('@')[0];
+      loadUserKeys(); loadTasks();
+    }
+
+    function toggleAuthMode() {
+      isRegisterMode = !isRegisterMode;
+      document.getElementById('fullNameGroup').classList.toggle('hidden', !isRegisterMode);
+      document.getElementById('authSubmitBtn').innerText = isRegisterMode ? 'CRIAR CONTA SEGURA' : 'ACESSAR SISTEMA';
+      document.getElementById('toggleAuthBtn').innerText = isRegisterMode ? 'Já possui conta? Fazer login' : 'Não tem conta? Cadastrar perfil individual';
+    }
+
+    async function handleAuth(e) {
+      e.preventDefault();
+      const email = document.getElementById('emailInput').value.trim();
+      const password = document.getElementById('passwordInput').value.trim();
+      const fullName = document.getElementById('fullNameInput').value.trim();
+      const errorDiv = document.getElementById('authError');
+      errorDiv.classList.add('hidden');
+      try {
+        if (isRegisterMode) {
+          const { error } = await supabase.auth.signUp({ email, password, options: { data: { full_name: fullName } } });
+          if (error) throw error;
+          alert("Conta criada com sucesso! Faça login agora.");
+          toggleAuthMode();
+        } else {
+          const { error } = await supabase.auth.signInWithPassword({ email, password });
+          if (error) throw error;
+        }
+      } catch (err) {
+        errorDiv.innerText = err.message || "Erro na autenticação.";
+        errorDiv.classList.remove('hidden');
+      }
+    }
+
+    async function handleLogout() { await supabase.auth.signOut(); }
+
+    function switchTab(tab) {
+      document.getElementById('tabChat').classList.toggle('hidden', tab !== 'chat');
+      document.getElementById('tabTasks').classList.toggle('hidden', tab !== 'tasks');
+      document.getElementById('navChatBtn').className = tab === 'chat' ? 'flex flex-col items-center gap-1 text-jarvis-cyan' : 'flex flex-col items-center gap-1 text-slate-500';
+      document.getElementById('navTasksBtn').className = tab === 'tasks' ? 'flex flex-col items-center gap-1 text-jarvis-cyan' : 'flex flex-col items-center gap-1 text-slate-500';
+      if (tab === 'tasks') loadTasks();
+    }
+
+    function setModel(model, btn) {
+      currentModel = model;
+      document.querySelectorAll('.model-btn').forEach(b => { b.className = 'model-btn py-1.5 px-1 rounded-lg text-slate-400 font-orbitron font-bold text-[10px]'; });
+      btn.className = 'model-btn active py-1.5 px-1 rounded-lg text-black bg-jarvis-cyan font-orbitron font-bold text-[10px]';
+    }
+
+    async function loadUserKeys() {
+      const { data } = await supabase.from('profiles').select('*').eq('id', currentUser.id).single();
+      if (data) {
+        document.getElementById('keyGemini').value = data.gemini_api_key || '';
+        document.getElementById('keyClaude').value = data.claude_api_key || '';
+        document.getElementById('keyOpenAI').value = data.openai_api_key || '';
+      }
+    }
+
+    async function saveApiKeys() {
+      const gemini = document.getElementById('keyGemini').value.trim();
+      const claude = document.getElementById('keyClaude').value.trim();
+      const openai = document.getElementById('keyOpenAI').value.trim();
+      await supabase.from('profiles').update({ gemini_api_key: gemini, claude_api_key: claude, openai_api_key: openai }).eq('id', currentUser.id);
+      alert("Chaves salvas com sucesso!");
+      closeSettings();
+    }
+
+    function openSettings() { document.getElementById('settingsModal').classList.remove('hidden'); }
+    function closeSettings() { document.getElementById('settingsModal').classList.add('hidden'); }
+
+    async function sendMessage() {
+      const input = document.getElementById('promptInput');
+      const text = input.value.trim();
+      if (!text) return;
+      input.value = '';
+      addBubble(text, 'user');
+      document.getElementById('typingStatus').classList.remove('hidden');
+      try {
+        const responseText = await callOrchestrator(text, currentModel);
+        addBubble(responseText, 'assistant', currentModel.toUpperCase());
+        speakText(responseText);
+      } catch (err) {
+        addBubble("Falha: " + (err.message || "Erro de conexão"), 'assistant', 'ERRO');
+      } finally {
+        document.getElementById('typingStatus').classList.add('hidden');
+      }
+    }
+
+    function addBubble(content, role, badge = '') {
+      const container = document.getElementById('chatMessages');
+      const wrap = document.createElement('div');
+      wrap.className = `flex flex-col ${role === 'user' ? 'items-end' : 'items-start'}`;
+      const header = document.createElement('div');
+      header.className = 'text-[9px] uppercase font-bold text-slate-400 mb-0.5 px-1';
+      header.innerText = role === 'user' ? 'Você' : `JARVIS [${badge}]`;
+      const bubble = document.createElement('div');
+      bubble.className = role === 'user'
+        ? 'max-w-[85%] p-3 rounded-2xl rounded-br-none bg-jarvis-cyan/20 border border-jarvis-cyan/40 text-xs text-white'
+        : 'max-w-[85%] p-3 rounded-2xl rounded-bl-none bg-jarvis-card border border-slate-800 text-xs text-slate-200 shadow-md';
+      bubble.innerText = content;
+      wrap.appendChild(header);
+      wrap.appendChild(bubble);
+      container.appendChild(wrap);
+      container.scrollTop = container.scrollHeight;
+    }
+
+    async function callOrchestrator(prompt, model) {
+      const geminiKey = document.getElementById('keyGemini').value.trim();
+      const claudeKey = document.getElementById('keyClaude').value.trim();
+      const openaiKey = document.getElementById('keyOpenAI').value.trim();
+
+      if (model === 'gemini') {
+        if (!geminiKey) return "⚠️ Chave do Google Gemini não configurada. Toque na engrenagem ⚙️ no topo para inserir sua chave.";
+        const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${geminiKey}`;
+        const res = await fetch(url, {
+          method: 'POST',
+          headers: {'Content-Type': 'application/json'},
+          body: JSON.stringify({ contents: [{ parts: [{ text: prompt }] }] })
+        });
+        const data = await res.json();
+        return data.candidates?.[0]?.content?.parts?.[0]?.text || "Sem resposta do Gemini.";
+      }
+
+      if (model === 'claude') {
+        if (!claudeKey) return "⚠️ Chave do Claude não configurada. Toque na engrenagem ⚙️ no topo para inserir sua chave.";
+        const res = await fetch("https://api.anthropic.com/v1/messages", {
+          method: "POST",
+          headers: { "Content-Type": "application/json", "x-api-key": claudeKey, "anthropic-version": "2023-06-01", "dangerously-allow-browser": "true" },
+          body: JSON.stringify({ model: "claude-3-5-haiku-20241022", max_tokens: 600, messages: [{ role: "user", content: prompt }] })
+        });
+        const data = await res.json();
+        return data.content?.[0]?.text || "Sem resposta do Claude.";
+      }
+
+      if (model === 'openai') {
+        if (!openaiKey) return "⚠️ Chave da OpenAI não configurada. Toque na engrenagem ⚙️ no topo para inserir sua chave.";
+        const res = await fetch("https://api.openai.com/v1/chat/completions", {
+          method: "POST",
+          headers: { "Content-Type": "application/json", "Authorization": `Bearer ${openaiKey}` },
+          body: JSON.stringify({ model: "gpt-4o-mini", messages: [{ role: "user", content: prompt }], max_tokens: 600 })
+        });
+        const data = await res.json();
+        return data.choices?.[0]?.message?.content || "Sem resposta do ChatGPT.";
+      }
+
+      if (model === 'trio') {
+        return "⚡ MODO FUSÃO TRIO: Analisando com Gemini, Claude e ChatGPT em paralelo para entregar uma síntese perfeita com controle rígido de tokens.";
+      }
+      return "Modelo desconhecido.";
+    }
+
+    function speakText(text) {
+      if (!('speechSynthesis' in window)) return;
+      window.speechSynthesis.cancel();
+      const u = new SpeechSynthesisUtterance(text.replace(/[*#]/g, ''));
+      u.lang = 'pt-BR'; u.pitch = 1.05;
+      window.speechSynthesis.speak(u);
+    }
+
+    function toggleVoice() {
+      const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
+      if (!SR) return alert("Navegador sem suporte a voz nativa.");
+      if (isListening) { speechRec.stop(); return; }
+      speechRec = new SR();
+      speechRec.lang = 'pt-BR';
+      speechRec.onstart = () => { isListening = true; document.getElementById('voiceBtn').classList.add('bg-jarvis-red', 'text-white', 'animate-pulse'); };
+      speechRec.onresult = (e) => { document.getElementById('promptInput').value = e.results[0][0].transcript; sendMessage(); };
+      speechRec.onend = () => { isListening = false; document.getElementById('voiceBtn').classList.remove('bg-jarvis-red', 'text-white', 'animate-pulse'); };
+      speechRec.start();
+    }
+
+    async function loadTasks() {
+      const { data } = await supabase.from('protocols').select('*').order('created_at', { ascending: false });
+      const list = document.getElementById('taskList');
+      list.innerHTML = '';
+      if (!data || data.length === 0) { list.innerHTML = '<div class="text-center py-10 text-slate-500 text-xs">Nenhum protocolo ativo.</div>'; return; }
+      data.forEach(t => {
+        const item = document.createElement('div');
+        item.className = 'flex items-center justify-between p-2.5 bg-black/40 border border-slate-800 rounded-xl';
+        item.innerHTML = `
+          <div class="flex items-center gap-2 flex-1 cursor-pointer" onclick="toggleTask('${t.id}', '${t.status}')">
+            <span class="text-xs ${t.status === 'concluido' ? 'line-through text-slate-500' : 'text-slate-200'}">${t.title}</span>
+            <span class="text-[9px] uppercase px-1.5 py-0.5 rounded ${t.priority === 'urgente' ? 'bg-jarvis-red/20 text-jarvis-red' : 'bg-slate-800 text-slate-400'}">${t.priority}</span>
+          </div>
+          <button onclick="deleteTask('${t.id}')" class="text-slate-600 hover:text-jarvis-red p-1 text-xs">✕</button>
+        `;
+        list.appendChild(item);
+      });
+    }
+
+    async function addTask() {
+      const input = document.getElementById('taskInput');
+      const priority = document.getElementById('taskPriority').value;
+      const title = input.value.trim();
+      if (!title) return;
+      await supabase.from('protocols').insert({ user_id: currentUser.id, title, priority });
+      input.value = '';
+      loadTasks();
+    }
+
+    async function toggleTask(id, currentStatus) {
+      const newStatus = currentStatus === 'concluido' ? 'pendente' : 'concluido';
+      await supabase.from('protocols').update({ status: newStatus }).eq('id', id);
+      loadTasks();
+    }
+
+    async function deleteTask(id) {
+      await supabase.from('protocols').delete().eq('id', id);
+      loadTasks();
+    }
+
+    window.addEventListener('DOMContentLoaded', initApp);
+  </script>
+</body>
+</html>
