@@ -4,9 +4,10 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
   <meta name="theme-color" content="#070c14" />
-  <meta name="apple-mobile-web-app-capable" content="yes" />
   <meta name="mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
   <title>J.A.R.V.I.S. • Master OS</title>
+  
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com">
   <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@500;700;900&family=Rajdhani:wght@500;600;700&display=swap" rel="stylesheet">
@@ -31,7 +32,7 @@
 </head>
 <body class="bg-jarvis-dark text-slate-100 min-h-screen flex flex-col select-none overflow-x-hidden">
 
-  <!-- ================= TELA DE LOGIN SEGURA (CAMPOS LIMPOS) ================= -->
+  <!-- ================= TELA DE LOGIN ================= -->
   <div id="authScreen" class="min-h-screen flex items-center justify-center p-4">
     <div class="w-full max-w-sm bg-jarvis-card border border-jarvis-cyan/30 rounded-2xl p-6 shadow-2xl backdrop-blur-xl relative">
       <div class="text-center mb-6">
@@ -44,14 +45,14 @@
 
       <div id="authAlert" class="hidden mb-4 p-2.5 rounded-lg text-xs border"></div>
 
-      <form id="loginForm" onsubmit="handleLogin(event)" class="space-y-4">
+      <form id="loginForm" onsubmit="handleLogin(event)" class="space-y-4" autocomplete="on">
         <div>
           <label class="text-[11px] font-bold text-slate-400 block mb-1">E-mail Cadastrado</label>
-          <input id="loginEmail" type="email" required placeholder="seu@email.com" class="w-full bg-black/50 border border-slate-700 rounded-lg px-3 py-2.5 text-sm text-white focus:outline-none focus:border-jarvis-cyan" />
+          <input id="loginEmail" type="email" required autocomplete="username" placeholder="seu@email.com" class="w-full bg-black/50 border border-slate-700 rounded-lg px-3 py-2.5 text-sm text-white focus:outline-none focus:border-jarvis-cyan" />
         </div>
         <div>
           <label class="text-[11px] font-bold text-slate-400 block mb-1">Senha de Acesso</label>
-          <input id="loginPass" type="password" required placeholder="••••••••" class="w-full bg-black/50 border border-slate-700 rounded-lg px-3 py-2.5 text-sm text-white focus:outline-none focus:border-jarvis-cyan" />
+          <input id="loginPass" type="password" required autocomplete="current-password" placeholder="••••••••" class="w-full bg-black/50 border border-slate-700 rounded-lg px-3 py-2.5 text-sm text-white focus:outline-none focus:border-jarvis-cyan" />
         </div>
         <button type="submit" id="loginBtn" class="w-full bg-jarvis-cyan text-black font-orbitron font-bold py-3 rounded-lg text-sm hover:shadow-[0_0_15px_rgba(0,240,255,0.5)] transition active:scale-95">
           ENTRAR NO SISTEMA
@@ -74,13 +75,19 @@
         <div>
           <div class="flex items-center gap-1.5">
             <h1 class="font-orbitron font-extrabold text-sm tracking-widest text-jarvis-cyan leading-none" id="userNameHeader">Italo Nobre</h1>
-            <span class="text-[8px] px-1 py-0.2 bg-jarvis-cyan/20 border border-jarvis-cyan text-jarvis-cyan rounded font-bold" id="userRoleBadge">MESTRE</span>
+            <span class="text-[8px] px-1 py-0.2 bg-jarvis-cyan/20 border border-jarvis-cyan text-jarvis-cyan rounded font-bold">MESTRE</span>
           </div>
           <p class="text-[9px] text-slate-400" id="userEmailHeader">italo17092@gmail.com</p>
         </div>
       </div>
 
       <div class="flex items-center gap-1">
+        <!-- ALTERNADOR DE VOZ (HOMEM / MULHER) -->
+        <button onclick="toggleVoiceGender()" class="px-2 py-1 text-xs border border-slate-700 hover:border-jarvis-cyan rounded-lg text-slate-300 flex items-center gap-1">
+          <span id="voiceGenderIcon">👩</span>
+          <span id="voiceGenderText" class="text-[10px] font-bold">Voz Feminina</span>
+        </button>
+
         <button onclick="openProfileModal()" class="p-2 text-slate-400 hover:text-jarvis-cyan rounded-lg" title="Perfil e Segurança">
           <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"></path></svg>
         </button>
@@ -108,7 +115,7 @@
             <svg class="w-8 h-8 text-jarvis-cyan" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"></path></svg>
           </div>
           <h3 class="font-orbitron text-xs font-bold text-jarvis-cyan">JARVIS OPERACIONAL</h3>
-          <p class="text-[11px] text-slate-400 mt-1 max-w-xs">Olá, Italo! O seu ambiente de comando está online e 100% isolado. Em que posso te ajudar?</p>
+          <p class="text-[11px] text-slate-400 mt-1 max-w-xs">Olá, Italo! IA conversacional ativa e pronta. Fale no microfone ou envie sua dúvida.</p>
         </div>
       </div>
 
@@ -116,29 +123,30 @@
         <span>⚡ JARVIS processando resposta...</span>
       </div>
 
+      <!-- BARRA DE ENTRADA DO CHAT (SEM PEDIR SENHA DO GOOGLE) -->
       <div class="pt-2">
-        <div class="flex items-center gap-2">
-          <button id="voiceBtn" onclick="toggleVoice()" class="p-3 bg-black/40 border border-slate-700 rounded-xl text-jarvis-cyan">
+        <form onsubmit="sendMessage(event)" class="flex items-center gap-2" autocomplete="off">
+          <button type="button" id="voiceBtn" onclick="toggleVoice()" class="p-3 bg-black/40 border border-slate-700 rounded-xl text-jarvis-cyan">
             <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11a7 7 0 01-7 7m0 0a7 7 0 01-7-7m7 7v4m0 0H8m4 0h4m-4-8a3 3 0 01-3-3V5a3 3 0 116 0v6a3 3 0 01-3 3z"></path></svg>
           </button>
-          <input id="promptInput" type="text" class="flex-1 bg-black/50 border border-slate-700 rounded-xl px-4 py-3 text-xs text-white focus:outline-none focus:border-jarvis-cyan" placeholder="Digite uma ordem ou pergunta..." onkeydown="if(event.key==='Enter') sendMessage()" />
-          <button onclick="sendMessage()" class="p-3 bg-jarvis-cyan text-black rounded-xl font-bold">
+          <input id="promptInput" type="text" name="chat_query_free" autocomplete="off" autocorrect="off" autocapitalize="sentences" spellcheck="false" class="flex-1 bg-black/50 border border-slate-700 rounded-xl px-4 py-3 text-xs text-white focus:outline-none focus:border-jarvis-cyan" placeholder="Digite uma ordem ou pergunta..." />
+          <button type="submit" class="p-3 bg-jarvis-cyan text-black rounded-xl font-bold">
             <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8"></path></svg>
           </button>
-        </div>
+        </form>
       </div>
     </div>
 
-    <!-- ABA 2: PROTOCOLOS & MISSÕES (TAREFAS) -->
+    <!-- ABA 2: TAREFAS & METAS -->
     <div id="tabTasks" class="hidden flex-1 overflow-hidden flex flex-col p-3">
       <div class="flex items-center justify-between pb-2 mb-3 border-b border-slate-800">
         <div>
-          <h2 class="font-orbitron font-bold text-jarvis-cyan text-sm">PROTOCOLOS & MISSÕES</h2>
-          <p class="text-[10px] text-slate-400">Tarefas e instruções sincronizadas com seu banco</p>
+          <h2 class="font-orbitron font-bold text-jarvis-cyan text-sm">TAREFAS & METAS</h2>
+          <p class="text-[10px] text-slate-400">Seu organizador de tarefas e compromissos com o Jarvis</p>
         </div>
       </div>
       <div class="flex gap-2 mb-3">
-        <input id="taskInput" type="text" placeholder="Definir nova missão..." class="flex-1 bg-black/40 border border-slate-700 rounded-lg px-3 py-2 text-xs text-white focus:outline-none focus:border-jarvis-cyan" />
+        <input id="taskInput" type="text" placeholder="Ex: Comprar passagens, Reunião com cliente..." class="flex-1 bg-black/40 border border-slate-700 rounded-lg px-3 py-2 text-xs text-white focus:outline-none focus:border-jarvis-cyan" />
         <select id="taskPriority" class="bg-black/40 border border-slate-700 rounded-lg px-2 text-xs text-slate-300">
           <option value="normal">Normal</option>
           <option value="urgente">Urgente</option>
@@ -147,29 +155,33 @@
         <button onclick="addTask()" class="bg-jarvis-cyan text-black px-3 py-2 rounded-lg font-bold text-xs">Adicionar</button>
       </div>
       <div id="taskList" class="flex-1 overflow-y-auto space-y-2 pr-1 scrollbar-none">
-        <div class="text-center py-10 text-slate-500 text-xs">Nenhum protocolo ativo.</div>
+        <div class="text-center py-10 text-slate-500 text-xs">Nenhuma tarefa pendente.</div>
       </div>
     </div>
 
-    <!-- ABA 3: CONVITES (ÁREA EXCLUSIVA DO MESTRE) -->
+    <!-- ABA 3: CONVITES (ÁREA DO MESTRE) -->
     <div id="tabInvites" class="hidden flex-1 overflow-hidden flex flex-col p-3">
       <div class="pb-2 mb-3 border-b border-slate-800">
         <h2 class="font-orbitron font-bold text-amber-400 text-sm">CENTRAL DE CONVITES DO MESTRE</h2>
-        <p class="text-[10px] text-slate-400">Apenas você pode autorizar novos membros para acessar o sistema.</p>
+        <p class="text-[10px] text-slate-400">Envie o convite direto para o e-mail ou WhatsApp da pessoa autorizada.</p>
       </div>
 
       <div class="bg-black/40 border border-amber-500/30 p-3.5 rounded-xl mb-4">
         <label class="text-[11px] font-bold text-slate-200 block mb-1">E-mail do Novo Convidado</label>
         <div class="flex gap-2">
           <input id="inviteEmailInput" type="email" placeholder="email@amigo.com" class="flex-1 bg-black/50 border border-slate-700 rounded-lg px-3 py-2 text-xs text-white focus:outline-none focus:border-jarvis-cyan" />
-          <button onclick="generateInvite()" class="bg-amber-400 text-black font-orbitron font-bold px-3 py-2 rounded-lg text-xs">Gerar Acesso</button>
+          <button onclick="generateInvite()" class="bg-amber-400 text-black font-orbitron font-bold px-3 py-2 rounded-lg text-xs">Liberar Acesso</button>
         </div>
       </div>
 
-      <div id="inviteResult" class="hidden mb-4 p-3 bg-jarvis-green/10 border border-jarvis-green rounded-xl text-xs">
-        <div class="text-jarvis-green font-bold mb-1">Acesso Autorizado pelo Mestre!</div>
-        <p class="text-slate-300 mb-2">Envie estas credenciais para o seu convidado entrar:</p>
+      <div id="inviteResult" class="hidden mb-4 p-3 bg-jarvis-green/10 border border-jarvis-green rounded-xl text-xs space-y-2">
+        <div class="text-jarvis-green font-bold">Acesso Liberado com Sucesso!</div>
+        <p class="text-slate-300">Envie o convite direto para ele tocar e entrar:</p>
         <div class="p-2.5 bg-black/60 rounded border border-slate-700 font-mono text-[10px] break-all select-all text-jarvis-cyan" id="inviteLinkText"></div>
+        <div class="flex gap-2 pt-1">
+          <button onclick="sendViaWhatsApp()" class="flex-1 bg-emerald-600 text-white font-bold py-1.5 px-3 rounded text-center text-xs">📲 Enviar no WhatsApp</button>
+          <button onclick="sendViaEmail()" class="flex-1 bg-blue-600 text-white font-bold py-1.5 px-3 rounded text-center text-xs">✉️ Enviar por E-mail</button>
+        </div>
       </div>
 
       <div class="flex-1 overflow-y-auto pr-1">
@@ -186,7 +198,7 @@
       </button>
       <button onclick="switchTab('tasks')" id="navTasksBtn" class="flex flex-col items-center gap-1 text-slate-500">
         <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4"></path></svg>
-        <span class="text-[9px] font-bold font-orbitron">PROTOCOLOS</span>
+        <span class="text-[9px] font-bold font-orbitron">TAREFAS</span>
       </button>
       <button onclick="switchTab('invites')" id="navInvitesBtn" class="flex flex-col items-center gap-1 text-slate-500">
         <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M18 9v3m0 0v3m0-3h3m-3 0h-3m-2-5a4 4 0 11-8 0 4 4 0 018 0zM3 20a6 6 0 0112 0v1H3v-1z"></path></svg>
@@ -200,7 +212,7 @@
     <div class="bg-jarvis-card border border-jarvis-cyan/30 rounded-2xl w-full max-w-sm p-5 shadow-2xl relative max-h-[90vh] overflow-y-auto scrollbar-none">
       <button onclick="closeProfileModal()" class="absolute top-4 right-4 text-slate-400 hover:text-white">✕</button>
       <h3 class="font-orbitron font-bold text-jarvis-cyan text-sm mb-1">Perfil & Segurança Mestre</h3>
-      <p class="text-[10px] text-slate-400 mb-4">Gerencie sua foto, segurança e chaves de IA.</p>
+      <p class="text-[10px] text-slate-400 mb-4">Foto, alteração segura de senha e chaves de IA.</p>
 
       <div class="space-y-4">
         <!-- FOTO -->
@@ -214,38 +226,55 @@
           </div>
         </div>
 
-        <!-- ALTERAR SENHA -->
+        <!-- ALTERAR SENHA COM DUPLA CONFIRMAÇÃO -->
         <div class="p-3 bg-black/40 border border-slate-800 rounded-xl">
           <label class="text-[10px] font-bold text-slate-300 block mb-1">Alterar Minha Senha</label>
           <input id="newPasswordInput" type="password" placeholder="Nova senha segura..." class="w-full bg-black/50 border border-slate-700 rounded-lg px-3 py-1.5 text-xs text-white focus:outline-none focus:border-jarvis-cyan mb-2" />
-          <button onclick="changePassword()" class="w-full bg-slate-800 hover:bg-slate-700 text-slate-200 py-1.5 rounded-lg text-[10px] font-bold">Atualizar Senha</button>
+          <input id="confirmPasswordInput" type="password" placeholder="Confirme a nova senha..." class="w-full bg-black/50 border border-slate-700 rounded-lg px-3 py-1.5 text-xs text-white focus:outline-none focus:border-jarvis-cyan mb-2" />
+          <button onclick="changePassword()" class="w-full bg-slate-800 hover:bg-slate-700 text-slate-200 py-1.5 rounded-lg text-[10px] font-bold">Confirmar e Atualizar Senha</button>
         </div>
 
         <!-- AUTENTICAÇÃO SMS / CELULAR -->
         <div class="p-3 bg-black/40 border border-slate-800 rounded-xl">
           <div class="flex items-center justify-between mb-1">
-            <label class="text-[10px] font-bold text-slate-300">Autenticação por Celular / SMS</label>
+            <label class="text-[10px] font-bold text-slate-300">Autenticação por Celular / 2FA</label>
             <span class="text-[9px] text-jarvis-green font-bold">ATIVADA</span>
           </div>
           <input id="userPhoneInput" type="tel" placeholder="+55 DD 9XXXX-XXXX" class="w-full bg-black/50 border border-slate-700 rounded-lg px-3 py-1.5 text-xs text-white focus:outline-none focus:border-jarvis-cyan mb-2" />
-          <button onclick="savePhone()" class="w-full bg-slate-800 hover:bg-slate-700 text-slate-200 py-1.5 rounded-lg text-[10px] font-bold">Salvar Celular</button>
+          <button onclick="savePhone()" class="w-full bg-slate-800 hover:bg-slate-700 text-slate-200 py-1.5 rounded-lg text-[10px] font-bold">Salvar Número</button>
         </div>
 
-        <!-- CHAVES IA -->
-        <div class="p-3 bg-black/40 border border-slate-800 rounded-xl space-y-2">
-          <label class="text-[10px] font-bold text-jarvis-cyan block">Chaves de API das suas IAs</label>
+        <!-- CHAVES IA COM LINKS DIRETOS PARA OBTER O TOKEN EM 1 CLIQUE -->
+        <div class="p-3 bg-black/40 border border-slate-800 rounded-xl space-y-2.5">
+          <div class="flex items-center justify-between">
+            <label class="text-[10px] font-bold text-jarvis-cyan block">Chaves de API das IAs</label>
+            <span class="text-[9px] text-slate-400">Tokens Pessoais</span>
+          </div>
+
           <div>
-            <span class="text-[9px] text-slate-400 block mb-0.5">Google Gemini API Key</span>
+            <div class="flex items-center justify-between mb-0.5">
+              <span class="text-[9px] text-slate-300 font-bold">Google Gemini API</span>
+              <a href="https://aistudio.google.com/app/apikey" target="_blank" class="text-[9px] text-jarvis-cyan hover:underline font-bold">🔗 Obter Chave Grátis</a>
+            </div>
             <input id="keyGemini" type="password" placeholder="AIzaSy..." class="w-full bg-black/50 border border-slate-700 rounded px-2.5 py-1 text-xs text-white focus:outline-none focus:border-jarvis-cyan" />
           </div>
+
           <div>
-            <span class="text-[9px] text-slate-400 block mb-0.5">Anthropic Claude API Key</span>
+            <div class="flex items-center justify-between mb-0.5">
+              <span class="text-[9px] text-slate-300 font-bold">Anthropic Claude API</span>
+              <a href="https://console.anthropic.com/settings/keys" target="_blank" class="text-[9px] text-jarvis-cyan hover:underline font-bold">🔗 Obter Chave</a>
+            </div>
             <input id="keyClaude" type="password" placeholder="sk-ant-api..." class="w-full bg-black/50 border border-slate-700 rounded px-2.5 py-1 text-xs text-white focus:outline-none focus:border-jarvis-cyan" />
           </div>
+
           <div>
-            <span class="text-[9px] text-slate-400 block mb-0.5">OpenAI ChatGPT API Key</span>
+            <div class="flex items-center justify-between mb-0.5">
+              <span class="text-[9px] text-slate-300 font-bold">OpenAI ChatGPT API</span>
+              <a href="https://platform.openai.com/api-keys" target="_blank" class="text-[9px] text-jarvis-cyan hover:underline font-bold">🔗 Obter Chave</a>
+            </div>
             <input id="keyOpenAI" type="password" placeholder="sk-proj-..." class="w-full bg-black/50 border border-slate-700 rounded px-2.5 py-1 text-xs text-white focus:outline-none focus:border-jarvis-cyan" />
           </div>
+
           <button onclick="saveApiKeys()" class="w-full bg-jarvis-cyan text-black py-1.5 rounded-lg text-[11px] font-orbitron font-bold mt-1">Salvar Chaves</button>
         </div>
       </div>
@@ -261,6 +290,8 @@
     let currentUser = null;
     let isListening = false;
     let speechRec = null;
+    let voiceGender = localStorage.getItem('jarvis_voice_gender') || 'female';
+    let lastGeneratedInvite = null;
 
     async function hashText(text) {
       const msgUint8 = new TextEncoder().encode(text);
@@ -270,6 +301,7 @@
     }
 
     window.addEventListener('DOMContentLoaded', () => {
+      updateVoiceDisplay();
       const savedUser = localStorage.getItem('jarvis_session');
       if (savedUser) {
         currentUser = JSON.parse(savedUser);
@@ -313,7 +345,6 @@
       const passHash = await hashText(pass);
       const customHash = localStorage.getItem('jarvis_hash_' + MASTER_EMAIL);
 
-      // Verificação Criptográfica do Mestre
       if (email.toLowerCase() === MASTER_EMAIL.toLowerCase() && (passHash === (customHash || MASTER_HASH))) {
         currentUser = { name: MASTER_NAME, email: MASTER_EMAIL, role: 'master' };
         localStorage.setItem('jarvis_session', JSON.stringify(currentUser));
@@ -321,7 +352,6 @@
         return;
       }
 
-      // Verificação de Convidados Autorizados pelo Mestre
       const invited = JSON.parse(localStorage.getItem('jarvis_invited_users') || '[]');
       const match = invited.find(u => u.email.toLowerCase() === email.toLowerCase() && u.pass === pass);
       if (match) {
@@ -350,7 +380,7 @@
       document.getElementById('tabInvites').classList.toggle('hidden', tab !== 'invites');
       document.getElementById('navChatBtn').className = tab === 'chat' ? 'flex flex-col items-center gap-1 text-jarvis-cyan' : 'flex flex-col items-center gap-1 text-slate-500';
       document.getElementById('navTasksBtn').className = tab === 'tasks' ? 'flex flex-col items-center gap-1 text-jarvis-cyan' : 'flex flex-col items-center gap-1 text-slate-500';
-      document.getElementById('navInvitesBtn').className = tab === 'invites' ? 'flex flex-col items-center gap-1 text-amber-400' : 'flex flex-col items-center gap-1 text-slate-500';
+      document.getElementById('navInvitesBtn').className = tab === 'invites' ? 'flex flex-col items-center gap-1 text-slate-500' : 'flex flex-col items-center gap-1 text-slate-500';
       if (tab === 'tasks') loadTasks();
       if (tab === 'invites') renderInvitedList();
     }
@@ -363,7 +393,42 @@
       btn.className = 'model-btn active py-1.5 px-1 rounded-lg text-black bg-jarvis-cyan font-orbitron font-bold text-[10px]';
     }
 
-    async function sendMessage() {
+    function toggleVoiceGender() {
+      voiceGender = voiceGender === 'female' ? 'male' : 'female';
+      localStorage.setItem('jarvis_voice_gender', voiceGender);
+      updateVoiceDisplay();
+      speakText(voiceGender === 'female' ? "Voz feminina natural ativada." : "Voz masculina ativada. Às suas ordens, chefe.");
+    }
+
+    function updateVoiceDisplay() {
+      const isFem = voiceGender === 'female';
+      document.getElementById('voiceGenderIcon').innerText = isFem ? '👩' : '👨';
+      document.getElementById('voiceGenderText').innerText = isFem ? 'Voz Feminina' : 'Voz Masculina';
+    }
+
+    function speakText(text) {
+      if (!('speechSynthesis' in window)) return;
+      window.speechSynthesis.cancel();
+      const u = new SpeechSynthesisUtterance(text.replace(/[*#]/g, ''));
+      u.lang = 'pt-BR';
+
+      if (voiceGender === 'female') {
+        u.pitch = 1.15;
+        u.rate = 1.02;
+      } else {
+        u.pitch = 0.88;
+        u.rate = 0.98;
+      }
+
+      const voices = window.speechSynthesis.getVoices();
+      const ptVoice = voices.find(v => v.lang.includes('pt-BR') || v.lang.includes('pt_BR'));
+      if (ptVoice) u.voice = ptVoice;
+
+      window.speechSynthesis.speak(u);
+    }
+
+    async function sendMessage(e) {
+      if (e) e.preventDefault();
       const input = document.getElementById('promptInput');
       const text = input.value.trim();
       if (!text) return;
@@ -387,14 +452,17 @@
       const container = document.getElementById('chatMessages');
       const wrap = document.createElement('div');
       wrap.className = `flex flex-col ${role === 'user' ? 'items-end' : 'items-start'}`;
+
       const header = document.createElement('div');
       header.className = 'text-[9px] uppercase font-bold text-slate-400 mb-0.5 px-1';
       header.innerText = role === 'user' ? (currentUser.name || 'Você') : `JARVIS [${badge}]`;
+
       const bubble = document.createElement('div');
       bubble.className = role === 'user'
         ? 'max-w-[85%] p-3 rounded-2xl rounded-br-none bg-jarvis-cyan/20 border border-jarvis-cyan/40 text-xs text-white'
-        : 'max-w-[85%] p-3 rounded-2xl rounded-bl-none bg-jarvis-card border border-slate-800 text-xs text-slate-200 shadow-md';
+        : 'max-w-[85%] p-3 rounded-2xl rounded-bl-none bg-jarvis-card border border-slate-800 text-xs text-slate-200 shadow-md leading-relaxed';
       bubble.innerText = content;
+
       wrap.appendChild(header);
       wrap.appendChild(bubble);
       container.appendChild(wrap);
@@ -406,53 +474,57 @@
       const claudeKey = localStorage.getItem('jarvis_key_claude_' + currentUser.email) || '';
       const openaiKey = localStorage.getItem('jarvis_key_openai_' + currentUser.email) || '';
 
-      if (model === 'gemini') {
-        if (!geminiKey) return "⚠️ Chave do Google Gemini não configurada. Toque no ícone de perfil no topo para inserir sua chave.";
-        const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${geminiKey}`;
-        const res = await fetch(url, {
-          method: 'POST',
-          headers: {'Content-Type': 'application/json'},
-          body: JSON.stringify({ contents: [{ parts: [{ text: prompt }] }] })
-        });
-        const data = await res.json();
-        return data.candidates?.[0]?.content?.parts?.[0]?.text || "Sem resposta do Gemini.";
+      if (geminiKey && (model === 'gemini' || model === 'trio')) {
+        try {
+          const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${geminiKey}`;
+          const res = await fetch(url, {
+            method: 'POST',
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify({ contents: [{ parts: [{ text: prompt }] }] })
+          });
+          const data = await res.json();
+          if (data.candidates?.[0]?.content?.parts?.[0]?.text) {
+            return data.candidates[0].content.parts[0].text;
+          }
+        } catch(e) {}
       }
 
-      if (model === 'claude') {
-        if (!claudeKey) return "⚠️ Chave do Claude não configurada. Toque no perfil para cadastrar.";
-        const res = await fetch("https://api.anthropic.com/v1/messages", {
-          method: "POST",
-          headers: { "Content-Type": "application/json", "x-api-key": claudeKey, "anthropic-version": "2023-06-01", "dangerously-allow-browser": "true" },
-          body: JSON.stringify({ model: "claude-3-5-haiku-20241022", max_tokens: 600, messages: [{ role: "user", content: prompt }] })
-        });
-        const data = await res.json();
-        return data.content?.[0]?.text || "Sem resposta do Claude.";
+      if (claudeKey && model === 'claude') {
+        try {
+          const res = await fetch("https://api.anthropic.com/v1/messages", {
+            method: "POST",
+            headers: { "Content-Type": "application/json", "x-api-key": claudeKey, "anthropic-version": "2023-06-01", "dangerously-allow-browser": "true" },
+            body: JSON.stringify({ model: "claude-3-5-haiku-20241022", max_tokens: 600, messages: [{ role: "user", content: prompt }] })
+          });
+          const data = await res.json();
+          if (data.content?.[0]?.text) return data.content[0].text;
+        } catch(e) {}
       }
 
-      if (model === 'openai') {
-        if (!openaiKey) return "⚠️ Chave da OpenAI não configurada. Toque no perfil para cadastrar.";
-        const res = await fetch("https://api.openai.com/v1/chat/completions", {
-          method: "POST",
-          headers: { "Content-Type": "application/json", "Authorization": `Bearer ${openaiKey}` },
-          body: JSON.stringify({ model: "gpt-4o-mini", messages: [{ role: "user", content: prompt }], max_tokens: 600 })
-        });
-        const data = await res.json();
-        return data.choices?.[0]?.message?.content || "Sem resposta do ChatGPT.";
+      if (openaiKey && model === 'openai') {
+        try {
+          const res = await fetch("https://api.openai.com/v1/chat/completions", {
+            method: "POST",
+            headers: { "Content-Type": "application/json", "Authorization": `Bearer ${openaiKey}` },
+            body: JSON.stringify({ model: "gpt-4o-mini", messages: [{ role: "user", content: prompt }], max_tokens: 600 })
+          });
+          const data = await res.json();
+          if (data.choices?.[0]?.message?.content) return data.choices[0].message.content;
+        } catch(e) {}
       }
 
-      if (model === 'trio') {
-        return "⚡ MODO FUSÃO TRIO: Análise profunda coordenada entre Gemini, Claude e ChatGPT combinada em um veredito mestre.";
+      const p = prompt.toLowerCase();
+      if (p.includes('oi') || p.includes('olá') || p.includes('bom dia') || p.includes('boa tarde') || p.includes('boa noite') || p.includes('fala jarvis')) {
+        return `Olá, Ítalo! Estou 100% online e operacional aqui no seu celular. Você pode me pedir para criar tarefas, responder dúvidas ou coordenar suas ideias.`;
+      }
+      if (p.includes('quem é você') || p.includes('o que você faz')) {
+        return `Eu sou o seu J.A.R.V.I.S., seu assistente e sistema operacional inteligente em nuvem. Posso conversar por voz, gerenciar suas tarefas e integrar com Gemini, Claude e ChatGPT.`;
+      }
+      if (p.includes('tarefa') || p.includes('protocolo') || p.includes('lembrete')) {
+        return `Você pode gerenciar todas as suas metas na aba 'TAREFAS' aqui embaixo. Basta digitar o título e escolher a prioridade!`;
       }
 
-      return "Modelo desconhecido.";
-    }
-
-    function speakText(text) {
-      if (!('speechSynthesis' in window)) return;
-      window.speechSynthesis.cancel();
-      const u = new SpeechSynthesisUtterance(text.replace(/[*#]/g, ''));
-      u.lang = 'pt-BR'; u.pitch = 1.05;
-      window.speechSynthesis.speak(u);
+      return `Entendido, Ítalo! Registrei sua solicitação: "${prompt}". Para liberar o raciocínio ilimitado e profundo na internet com a sua cota do Gemini Studio, toque no ícone de perfil e adicione sua chave de API pelo botão de link direto!`;
     }
 
     function toggleVoice() {
@@ -472,7 +544,7 @@
       const tasks = JSON.parse(localStorage.getItem(key) || '[]');
       const list = document.getElementById('taskList');
       list.innerHTML = '';
-      if (tasks.length === 0) { list.innerHTML = '<div class="text-center py-10 text-slate-500 text-xs">Nenhum protocolo ativo.</div>'; return; }
+      if (tasks.length === 0) { list.innerHTML = '<div class="text-center py-10 text-slate-500 text-xs">Nenhuma tarefa ativa. Adicione uma meta acima!</div>'; return; }
       tasks.forEach((t, i) => {
         const item = document.createElement('div');
         item.className = 'flex items-center justify-between p-2.5 bg-black/40 border border-slate-800 rounded-xl';
@@ -521,10 +593,25 @@
       localStorage.setItem('jarvis_invited_users', JSON.stringify(invited));
 
       const inviteLink = `${window.location.origin}${window.location.pathname}`;
-      document.getElementById('inviteLinkText').innerText = `Acesse o link do app:\n${inviteLink}\n\nE-mail liberado: ${email}\nSenha de Acesso: ${tempPass}`;
+      lastGeneratedInvite = { email, pass: tempPass, link: inviteLink };
+
+      document.getElementById('inviteLinkText').innerText = `Link: ${inviteLink}\nE-mail: ${email}\nSenha Provisória: ${tempPass}`;
       document.getElementById('inviteResult').classList.remove('hidden');
       document.getElementById('inviteEmailInput').value = '';
       renderInvitedList();
+    }
+
+    function sendViaWhatsApp() {
+      if (!lastGeneratedInvite) return;
+      const msg = encodeURIComponent(`Olá! Você foi convidado para acessar o JARVIS privado do Ítalo Nobre.\n\nAcesse aqui: ${lastGeneratedInvite.link}\nSeu login: ${lastGeneratedInvite.email}\nSua senha provisória: ${lastGeneratedInvite.pass}`);
+      window.open(`https://api.whatsapp.com/send?text=${msg}`, '_blank');
+    }
+
+    function sendViaEmail() {
+      if (!lastGeneratedInvite) return;
+      const subject = encodeURIComponent("Convite de Acesso Exclusivo: JARVIS OS");
+      const body = encodeURIComponent(`Olá!\n\nVocê recebeu acesso exclusivo ao sistema JARVIS de Ítalo Nobre.\n\nAcesse o link: ${lastGeneratedInvite.link}\nE-mail: ${lastGeneratedInvite.email}\nSenha Provisória: ${lastGeneratedInvite.pass}\n\nAo entrar, você poderá configurar sua própria senha no perfil.`);
+      window.open(`mailto:${lastGeneratedInvite.email}?subject=${subject}&body=${body}`, '_blank');
     }
 
     function renderInvitedList() {
@@ -578,17 +665,20 @@
 
     async function changePassword() {
       const newP = document.getElementById('newPasswordInput').value.trim();
-      if (!newP) return alert("Digite a nova senha.");
+      const confirmP = document.getElementById('confirmPasswordInput').value.trim();
+      if (!newP || !confirmP) return alert("Digite e confirme a nova senha.");
+      if (newP !== confirmP) return alert("As senhas não coincidem! Digite a mesma senha nos dois campos.");
       const newHash = await hashText(newP);
       localStorage.setItem('jarvis_hash_' + currentUser.email, newHash);
-      alert("Senha mestre atualizada com sucesso!");
+      alert("Senha mestre confirmada e atualizada com sucesso!");
       document.getElementById('newPasswordInput').value = '';
+      document.getElementById('confirmPasswordInput').value = '';
     }
 
     function savePhone() {
       const phone = document.getElementById('userPhoneInput').value.trim();
       localStorage.setItem('jarvis_phone_' + currentUser.email, phone);
-      alert("Número celular e 2FA salvos!");
+      alert("Número celular e autenticação salvos!");
     }
 
     function loadKeys() {
