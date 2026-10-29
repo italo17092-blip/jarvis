@@ -6,7 +6,7 @@
   <meta name="theme-color" content="#070c14" />
   <meta name="mobile-web-app-capable" content="yes" />
   <meta name="apple-mobile-web-app-capable" content="yes" />
-  <title>J.A.R.V.I.S. • Live AI</title>
+  <title>J.A.R.V.I.S. • Master OS</title>
   
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com">
@@ -65,7 +65,7 @@
       </form>
 
       <div class="mt-6 text-center text-[10px] text-slate-500">
-        🔒 Acesso estritamente privado. Apenas usuários autorizados pelo Mestre.
+        🔒 Acesso restrito ao Mestre e convidados autorizados.
       </div>
     </div>
   </div>
@@ -94,13 +94,11 @@
       </div>
 
       <div class="flex items-center gap-1.5">
-        <!-- ALTERNADOR DE VOZ -->
         <button onclick="cycleVoice()" class="px-2 py-1 text-xs border border-slate-700 hover:border-jarvis-cyan rounded-lg text-slate-300 flex items-center gap-1" title="Alternar Voz">
           <span id="voiceIcon">👨</span>
           <span id="voiceLabel" class="text-[10px] font-bold">Jarvis</span>
         </button>
 
-        <!-- CONFIGURAÇÕES DE API -->
         <button onclick="openProfileModal()" class="p-2 text-slate-400 hover:text-jarvis-cyan rounded-lg" title="Configurar IAs e Chaves">
           <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path></svg>
         </button>
@@ -120,20 +118,19 @@
         <button onclick="setModel('trio', this)" class="model-btn py-1.5 px-1 rounded-lg text-slate-400 font-orbitron font-bold text-[10px] text-amber-400">⚡ TRIO</button>
       </div>
 
-      <!-- MODO LIVE CONTÍNUO (ESTILO GEMINI LIVE) -->
       <button id="btnLiveMode" onclick="toggleLiveConversation()" class="px-2.5 py-2 rounded-xl border border-slate-700 bg-black/40 text-[10px] font-bold font-orbitron flex items-center gap-1 transition" title="Modo Conversa Contínua">
         <span class="w-2 h-2 rounded-full bg-slate-500" id="liveDot"></span>
         <span>LIVE</span>
       </button>
     </div>
 
-    <!-- AVISO DE CHAVE -->
-    <div id="apiKeyBanner" class="hidden px-3 py-1.5 bg-amber-500/20 border-b border-amber-500/40 text-[11px] text-amber-300 flex items-center justify-between">
-      <span>⚠️ Chave Gemini não conectada.</span>
-      <button onclick="openProfileModal()" class="font-bold underline text-white ml-2">Conectar Chave</button>
+    <!-- BANNER DE STATUS DO MODELO CONECTADO -->
+    <div id="modelStatusBanner" class="px-3 py-1 bg-black/60 border-b border-slate-800 text-[10px] text-slate-400 flex items-center justify-between">
+      <span id="activeModelLabel">⚡ Motor Ativo: Conectando...</span>
+      <span class="text-jarvis-green font-bold">ONLINE</span>
     </div>
 
-    <!-- ABA 1: CHAT COM SUPORTE A VISÃO E ÁUDIO -->
+    <!-- ABA 1: CHAT -->
     <div id="tabChat" class="flex-1 overflow-hidden flex flex-col p-3">
       <div id="chatMessages" class="flex-1 overflow-y-auto space-y-3 pr-1 scrollbar-none">
         <div class="h-full flex flex-col items-center justify-center text-center p-6 text-slate-500">
@@ -146,10 +143,10 @@
       </div>
 
       <div id="typingStatus" class="hidden py-1 px-3 text-[11px] text-jarvis-cyan flex items-center gap-2 animate-pulse">
-        <span>⚡ JARVIS analisando e gerando resposta...</span>
+        <span>⚡ JARVIS processando com Google AI...</span>
       </div>
 
-      <!-- PRÉVIA DA FOTO CAPTURADA PELA CÂMERA -->
+      <!-- PRÉVIA DA CÂMERA -->
       <div id="imagePreviewContainer" class="hidden relative mb-2 p-1.5 bg-black/60 border border-jarvis-cyan rounded-xl flex items-center gap-2">
         <img id="imagePreview" src="" class="w-14 h-14 object-cover rounded-lg border border-slate-700" />
         <div class="flex-1 text-[11px] text-slate-300 truncate">
@@ -158,16 +155,14 @@
         <button type="button" onclick="clearAttachedImage()" class="p-1.5 text-slate-400 hover:text-jarvis-red">✕</button>
       </div>
 
-      <!-- BARRA DE ENTRADA DO CHAT -->
+      <!-- ENTRADA DO CHAT -->
       <div class="pt-2">
         <form onsubmit="sendMessage(event)" class="flex items-center gap-2" autocomplete="off">
-          <!-- BOTÃO CÂMERA -->
           <button type="button" onclick="triggerCameraInput()" class="p-3 bg-black/40 border border-slate-700 hover:border-jarvis-cyan rounded-xl text-slate-300" title="Tirar Foto">
             <svg class="w-5 h-5 text-jarvis-cyan" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 13a3 3 0 11-6 0 3 3 0 016 0z"></path></svg>
           </button>
           <input type="file" id="cameraFileInput" accept="image/*" capture="environment" onchange="handleCameraPhoto(event)" class="hidden" />
 
-          <!-- BOTÃO MICROFONE -->
           <button type="button" id="voiceBtn" onclick="toggleVoice()" class="p-3 bg-black/40 border border-slate-700 rounded-xl text-jarvis-cyan">
             <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11a7 7 0 01-7 7m0 0a7 7 0 01-7-7m7 7v4m0 0H8m4 0h4m-4-8a3 3 0 01-3-3V5a3 3 0 116 0v6a3 3 0 01-3 3z"></path></svg>
           </button>
@@ -332,6 +327,16 @@
     let currentAttachedBase64 = null;
     let lastGeneratedInvite = null;
 
+    // Lista oficial de modelos Google Gemini para auto-resolução em cascata
+    const GEMINI_MODELS = [
+      'gemini-2.5-flash',
+      'gemini-2.0-flash',
+      'gemini-flash-latest',
+      'gemini-1.5-flash-latest',
+      'gemini-2.5-pro',
+      'gemini-pro'
+    ];
+
     async function hashText(text) {
       const msgUint8 = new TextEncoder().encode(text);
       const hashBuffer = await crypto.subtle.digest('SHA-256', msgUint8);
@@ -366,14 +371,14 @@
         document.getElementById('headerAvatar').innerHTML = `<img src="${avatarSaved}" class="w-full h-full object-cover" />`;
       }
       
-      checkApiKeyBanner();
+      updateModelLabel();
       loadSavedKeys();
       loadTasks();
     }
 
-    function checkApiKeyBanner() {
-      const key = localStorage.getItem('jarvis_key_gemini_' + currentUser.email);
-      document.getElementById('apiKeyBanner').classList.toggle('hidden', !!key);
+    function updateModelLabel() {
+      const active = localStorage.getItem('jarvis_active_gemini_model') || 'gemini-2.5-flash';
+      document.getElementById('activeModelLabel').innerText = `⚡ Motor Google: ${active}`;
     }
 
     async function handleLogin(e) {
@@ -508,8 +513,8 @@
       isLiveMode = !isLiveMode;
       updateLiveModeUI();
       if (isLiveMode) {
-        speakText("Modo Live ativado. Pode falar comigo direto.");
-        setTimeout(startVoiceListening, 1800);
+        speakText("Modo Live ativado.");
+        setTimeout(startVoiceListening, 1600);
       } else {
         stopSpeaking();
       }
@@ -553,10 +558,10 @@
       document.getElementById('promptInput').placeholder = "Pergunte ou envie uma foto...";
     }
 
-    async function sendMessage(e) {
+    async function sendMessage(e, directText = null) {
       if (e) e.preventDefault();
       const input = document.getElementById('promptInput');
-      const text = input.value.trim();
+      const text = directText !== null ? directText : input.value.trim();
       const imageToSend = currentAttachedBase64;
 
       if (!text && !imageToSend) return;
@@ -608,11 +613,12 @@
       container.scrollTop = container.scrollHeight;
     }
 
+    // CHAMADA ROBUSTA À API DO GOOGLE GEMINI COM AUTO-RESOLUÇÃO DE MODELO
     async function callRealAI(prompt, model, imageBase64 = null) {
       const geminiKey = localStorage.getItem('jarvis_key_gemini_' + currentUser.email) || '';
       
       if (!geminiKey) {
-        throw new Error("Sua chave do Google Gemini não está conectada! Toque no ícone de configurações ⚙️ no topo para colar e salvar sua chave gratuita.");
+        throw new Error("Sua chave do Google Gemini não está cadastrada! Toque no ícone de configurações ⚙️ para salvar sua chave.");
       }
 
       const parts = [{ text: prompt }];
@@ -625,26 +631,46 @@
         });
       }
 
-      const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${geminiKey}`;
-      
-      const res = await fetch(url, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ contents: [{ parts }] })
-      });
+      const preferred = localStorage.getItem('jarvis_active_gemini_model') || 'gemini-2.5-flash';
+      const testList = [preferred, ...GEMINI_MODELS.filter(m => m !== preferred)];
 
-      const data = await res.json();
-      
-      if (!res.ok) {
-        const errDetail = data.error?.message || `HTTP ${res.status}`;
-        throw new Error(`Google API: ${errDetail}`);
+      let lastError = null;
+
+      for (const modelCandidate of testList) {
+        try {
+          const url = `https://generativelanguage.googleapis.com/v1beta/models/${modelCandidate}:generateContent?key=${geminiKey}`;
+          const res = await fetch(url, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ contents: [{ parts }] })
+          });
+
+          const data = await res.json();
+          if (res.ok && data.candidates?.[0]?.content?.parts?.[0]?.text) {
+            localStorage.setItem('jarvis_active_gemini_model', modelCandidate);
+            updateModelLabel();
+            return data.candidates[0].content.parts[0].text;
+          }
+
+          if (data.error) {
+            lastError = data.error.message;
+            if (res.status === 404 || data.error.code === 404) {
+              continue;
+            } else {
+              throw new Error(data.error.message);
+            }
+          }
+        } catch(err) {
+          lastError = err.message;
+          if (err.message && err.message.includes('404')) continue;
+          throw err;
+        }
       }
 
-      const reply = data.candidates?.[0]?.content?.parts?.[0]?.text;
-      if (!reply) throw new Error("A IA não retornou texto.");
-      return reply;
+      throw new Error(`Google API: ${lastError || 'Não foi possível conectar aos modelos do Gemini.'}`);
     }
 
+    // TESTADOR DE CHAVE EM TEMPO REAL
     async function testAndSaveGeminiKey() {
       const key = document.getElementById('keyGemini').value.trim();
       const feedback = document.getElementById('keyStatusFeedback');
@@ -657,30 +683,52 @@
       }
 
       feedback.className = "text-[10px] p-2 rounded bg-amber-500/20 text-amber-300 border border-amber-500 animate-pulse";
-      feedback.innerText = "Testando conexão com o Google Gemini...";
+      feedback.innerText = "Identificando modelos oficiais ativos para sua chave...";
 
       try {
-        const testUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${key}`;
+        const listUrl = `https://generativelanguage.googleapis.com/v1beta/models?key=${key}`;
+        const listRes = await fetch(listUrl);
+        const listData = await listRes.json();
+
+        let workingModel = 'gemini-2.5-flash';
+
+        if (listRes.ok && listData.models) {
+          const supported = listData.models
+            .filter(m => m.supportedGenerationMethods && m.supportedGenerationMethods.includes('generateContent'))
+            .map(m => m.name.replace('models/', ''));
+
+          for (const cand of GEMINI_MODELS) {
+            if (supported.includes(cand)) {
+              workingModel = cand;
+              break;
+            }
+          }
+          if (!workingModel && supported.length > 0) workingModel = supported[0];
+        }
+
+        const testUrl = `https://generativelanguage.googleapis.com/v1beta/models/${workingModel}:generateContent?key=${key}`;
         const res = await fetch(testUrl, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ contents: [{ parts: [{ text: "Diga 'OK'" }] }] })
+          body: JSON.stringify({ contents: [{ parts: [{ text: "Diga 'Conectado'" }] }] })
         });
         const data = await res.json();
 
         if (res.ok && data.candidates) {
           localStorage.setItem('jarvis_key_gemini_' + currentUser.email, key);
+          localStorage.setItem('jarvis_active_gemini_model', workingModel);
+          updateModelLabel();
+
           feedback.className = "text-[10px] p-2 rounded bg-jarvis-green/20 text-jarvis-green border border-jarvis-green font-bold";
-          feedback.innerText = "✔ Chave VÁLIDA e CONECTADA com sucesso! O JARVIS já está pronto.";
-          checkApiKeyBanner();
+          feedback.innerText = `✔ Conectado ao modelo oficial [${workingModel}] com sucesso!`;
           setTimeout(closeProfileModal, 1500);
         } else {
           feedback.className = "text-[10px] p-2 rounded bg-jarvis-red/20 text-jarvis-red border border-jarvis-red";
-          feedback.innerText = "❌ Chave Inválida: " + (data.error?.message || "Verifique se copiou a chave correta no Google AI Studio.");
+          feedback.innerText = "❌ Erro: " + (data.error?.message || "Verifique se a chave está ativa.");
         }
       } catch(err) {
         feedback.className = "text-[10px] p-2 rounded bg-jarvis-red/20 text-jarvis-red border border-jarvis-red";
-        feedback.innerText = "❌ Falha de Conexão: " + err.message;
+        feedback.innerText = "❌ Falha: " + err.message;
       }
     }
 
@@ -692,6 +740,7 @@
       alert("Chaves salvas com sucesso!");
     }
 
+    // MICROFONE COM ENVIO IMEDIATO
     function toggleVoice() {
       if (isListening) stopVoiceListening();
       else startVoiceListening();
@@ -699,7 +748,7 @@
 
     function startVoiceListening() {
       const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
-      if (!SR) return alert("Navegador sem suporte a reconhecimento de voz.");
+      if (!SR) return alert("Navegador sem suporte a voz.");
       
       stopSpeaking();
 
@@ -713,9 +762,10 @@
         document.getElementById('voiceBtn').classList.add('bg-jarvis-red', 'text-white', 'animate-pulse');
       };
       speechRec.onresult = (e) => {
-        const t = e.results[0][0].transcript;
-        document.getElementById('promptInput').value = t;
-        sendMessage();
+        const text = e.results[0][0].transcript;
+        if (text && text.trim()) {
+          sendMessage(null, text.trim());
+        }
       };
       speechRec.onend = () => {
         isListening = false;
