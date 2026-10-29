@@ -6,7 +6,7 @@
   <meta name="theme-color" content="#070c14" />
   <meta name="mobile-web-app-capable" content="yes" />
   <meta name="apple-mobile-web-app-capable" content="yes" />
-  <title>J.A.R.V.I.S. • Master OS</title>
+  <title>J.A.R.V.I.S. • Live AI</title>
   
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com">
@@ -28,6 +28,11 @@
     * { -webkit-tap-highlight-color: transparent; }
     body { font-family: 'Rajdhani', sans-serif; background-color: #070c14; }
     .scrollbar-none::-webkit-scrollbar { display: none; }
+    @keyframes pulse-live {
+      0%, 100% { box-shadow: 0 0 10px rgba(0, 240, 255, 0.4); }
+      50% { box-shadow: 0 0 25px rgba(0, 240, 255, 0.9); }
+    }
+    .live-glow { animation: pulse-live 1.8s infinite; }
   </style>
 </head>
 <body class="bg-jarvis-dark text-slate-100 min-h-screen flex flex-col select-none overflow-x-hidden">
@@ -40,21 +45,21 @@
           <svg class="w-8 h-8 text-jarvis-cyan animate-pulse" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"></path></svg>
         </div>
         <h1 class="font-orbitron text-xl font-black tracking-widest text-jarvis-cyan">J.A.R.V.I.S.</h1>
-        <p class="text-[10px] text-slate-400 uppercase tracking-widest mt-1">ACESSO RESTRITO • SISTEMA PRIVADO</p>
+        <p class="text-[10px] text-slate-400 uppercase tracking-widest mt-1">ACESSO PRIVADO • SISTEMA RESTRITO</p>
       </div>
 
       <div id="authAlert" class="hidden mb-4 p-2.5 rounded-lg text-xs border"></div>
 
-      <form id="loginForm" onsubmit="handleLogin(event)" class="space-y-4" autocomplete="on">
+      <form id="loginForm" onsubmit="handleLogin(event)" class="space-y-4">
         <div>
           <label class="text-[11px] font-bold text-slate-400 block mb-1">E-mail Cadastrado</label>
-          <input id="loginEmail" type="email" required autocomplete="username" placeholder="seu@email.com" class="w-full bg-black/50 border border-slate-700 rounded-lg px-3 py-2.5 text-sm text-white focus:outline-none focus:border-jarvis-cyan" />
+          <input id="loginEmail" type="email" required placeholder="seu@email.com" class="w-full bg-black/50 border border-slate-700 rounded-lg px-3 py-2.5 text-sm text-white focus:outline-none focus:border-jarvis-cyan" />
         </div>
         <div>
           <label class="text-[11px] font-bold text-slate-400 block mb-1">Senha de Acesso</label>
-          <input id="loginPass" type="password" required autocomplete="current-password" placeholder="••••••••" class="w-full bg-black/50 border border-slate-700 rounded-lg px-3 py-2.5 text-sm text-white focus:outline-none focus:border-jarvis-cyan" />
+          <input id="loginPass" type="password" required placeholder="••••••••" class="w-full bg-black/50 border border-slate-700 rounded-lg px-3 py-2.5 text-sm text-white focus:outline-none focus:border-jarvis-cyan" />
         </div>
-        <button type="submit" id="loginBtn" class="w-full bg-jarvis-cyan text-black font-orbitron font-bold py-3 rounded-lg text-sm hover:shadow-[0_0_15px_rgba(0,240,255,0.5)] transition active:scale-95">
+        <button type="submit" class="w-full bg-jarvis-cyan text-black font-orbitron font-bold py-3 rounded-lg text-sm hover:shadow-[0_0_15px_rgba(0,240,255,0.5)] transition active:scale-95">
           ENTRAR NO SISTEMA
         </button>
       </form>
@@ -66,9 +71,16 @@
   </div>
 
   <!-- ================= APLICAÇÃO PRINCIPAL ================= -->
-  <div id="appScreen" class="hidden flex-1 flex flex-col h-screen max-w-lg mx-auto w-full border-x border-slate-900 shadow-2xl overflow-hidden">
+  <div id="appScreen" class="hidden flex-1 flex flex-col h-screen max-w-lg mx-auto w-full border-x border-slate-900 shadow-2xl overflow-hidden relative">
+    
+    <!-- BOTÃO FLUTUANTE DE INTERRUPÇÃO IMEDIATA (CALAR A IA) -->
+    <button id="btnStopSpeech" onclick="stopSpeaking()" class="hidden fixed top-16 left-1/2 -translate-x-1/2 z-50 bg-jarvis-red text-white font-orbitron font-black text-xs px-4 py-2 rounded-full shadow-[0_0_20px_rgba(255,51,102,0.8)] border border-white/50 flex items-center gap-2 animate-bounce">
+      <span>⏹️</span> INTERROMPER VOZ
+    </button>
+
+    <!-- HEADER -->
     <header class="p-3 bg-jarvis-card/90 backdrop-blur-md border-b border-jarvis-cyan/20 flex items-center justify-between sticky top-0 z-20">
-      <div class="flex items-center gap-2.5">
+      <div class="flex items-center gap-2">
         <div id="headerAvatar" class="w-9 h-9 rounded-full border border-jarvis-cyan overflow-hidden flex items-center justify-center bg-black/40 shadow-[0_0_10px_rgba(0,240,255,0.4)]">
           <span class="font-orbitron font-bold text-xs text-jarvis-cyan" id="avatarText">IN</span>
         </div>
@@ -81,55 +93,87 @@
         </div>
       </div>
 
-      <div class="flex items-center gap-1">
-        <!-- ALTERNADOR DE VOZ (HOMEM / MULHER) -->
-        <button onclick="toggleVoiceGender()" class="px-2 py-1 text-xs border border-slate-700 hover:border-jarvis-cyan rounded-lg text-slate-300 flex items-center gap-1">
-          <span id="voiceGenderIcon">👩</span>
-          <span id="voiceGenderText" class="text-[10px] font-bold">Voz Feminina</span>
+      <div class="flex items-center gap-1.5">
+        <!-- ALTERNADOR DE VOZ -->
+        <button onclick="cycleVoice()" class="px-2 py-1 text-xs border border-slate-700 hover:border-jarvis-cyan rounded-lg text-slate-300 flex items-center gap-1" title="Alternar Voz">
+          <span id="voiceIcon">👨</span>
+          <span id="voiceLabel" class="text-[10px] font-bold">Jarvis</span>
         </button>
 
-        <button onclick="openProfileModal()" class="p-2 text-slate-400 hover:text-jarvis-cyan rounded-lg" title="Perfil e Segurança">
-          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"></path></svg>
+        <!-- CONFIGURAÇÕES DE API -->
+        <button onclick="openProfileModal()" class="p-2 text-slate-400 hover:text-jarvis-cyan rounded-lg" title="Configurar IAs e Chaves">
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path></svg>
         </button>
+
         <button onclick="handleLogout()" class="p-2 text-slate-400 hover:text-jarvis-red rounded-lg" title="Sair">
           <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"></path></svg>
         </button>
       </div>
     </header>
 
-    <!-- SELETOR DE IAs -->
-    <div class="px-3 pt-2 pb-1 bg-jarvis-dark/80 backdrop-blur border-b border-slate-800">
-      <div class="grid grid-cols-4 gap-1 p-1 bg-black/40 border border-slate-800 rounded-xl text-center">
+    <!-- SELETOR DE IAs E BOTÃO LIVE -->
+    <div class="px-3 pt-2 pb-1 bg-jarvis-dark/80 backdrop-blur border-b border-slate-800 flex items-center justify-between gap-2">
+      <div class="grid grid-cols-4 gap-1 p-1 bg-black/40 border border-slate-800 rounded-xl text-center flex-1">
         <button onclick="setModel('gemini', this)" class="model-btn active py-1.5 px-1 rounded-lg text-black bg-jarvis-cyan font-orbitron font-bold text-[10px]">GEMINI</button>
         <button onclick="setModel('claude', this)" class="model-btn py-1.5 px-1 rounded-lg text-slate-400 font-orbitron font-bold text-[10px]">CLAUDE</button>
         <button onclick="setModel('openai', this)" class="model-btn py-1.5 px-1 rounded-lg text-slate-400 font-orbitron font-bold text-[10px]">CHATGPT</button>
         <button onclick="setModel('trio', this)" class="model-btn py-1.5 px-1 rounded-lg text-slate-400 font-orbitron font-bold text-[10px] text-amber-400">⚡ TRIO</button>
       </div>
+
+      <!-- MODO LIVE CONTÍNUO (ESTILO GEMINI LIVE) -->
+      <button id="btnLiveMode" onclick="toggleLiveConversation()" class="px-2.5 py-2 rounded-xl border border-slate-700 bg-black/40 text-[10px] font-bold font-orbitron flex items-center gap-1 transition" title="Modo Conversa Contínua">
+        <span class="w-2 h-2 rounded-full bg-slate-500" id="liveDot"></span>
+        <span>LIVE</span>
+      </button>
     </div>
 
-    <!-- ABA 1: CHAT -->
+    <!-- AVISO DE CHAVE -->
+    <div id="apiKeyBanner" class="hidden px-3 py-1.5 bg-amber-500/20 border-b border-amber-500/40 text-[11px] text-amber-300 flex items-center justify-between">
+      <span>⚠️ Chave Gemini não conectada.</span>
+      <button onclick="openProfileModal()" class="font-bold underline text-white ml-2">Conectar Chave</button>
+    </div>
+
+    <!-- ABA 1: CHAT COM SUPORTE A VISÃO E ÁUDIO -->
     <div id="tabChat" class="flex-1 overflow-hidden flex flex-col p-3">
       <div id="chatMessages" class="flex-1 overflow-y-auto space-y-3 pr-1 scrollbar-none">
         <div class="h-full flex flex-col items-center justify-center text-center p-6 text-slate-500">
-          <div class="w-16 h-16 border border-jarvis-cyan/30 rounded-full flex items-center justify-center mb-3 animate-pulse">
+          <div class="w-16 h-16 border border-jarvis-cyan/30 rounded-full flex items-center justify-center mb-3 live-glow">
             <svg class="w-8 h-8 text-jarvis-cyan" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"></path></svg>
           </div>
-          <h3 class="font-orbitron text-xs font-bold text-jarvis-cyan">JARVIS OPERACIONAL</h3>
-          <p class="text-[11px] text-slate-400 mt-1 max-w-xs">Olá, Italo! IA conversacional ativa e pronta. Fale no microfone ou envie sua dúvida.</p>
+          <h3 class="font-orbitron text-xs font-bold text-jarvis-cyan">JARVIS MULTIMODAL PRONTO</h3>
+          <p class="text-[11px] text-slate-400 mt-1 max-w-xs">Converse por texto, voz natural ou envie fotos da câmera para a IA analisar.</p>
         </div>
       </div>
 
       <div id="typingStatus" class="hidden py-1 px-3 text-[11px] text-jarvis-cyan flex items-center gap-2 animate-pulse">
-        <span>⚡ JARVIS processando resposta...</span>
+        <span>⚡ JARVIS analisando e gerando resposta...</span>
       </div>
 
-      <!-- BARRA DE ENTRADA DO CHAT (SEM PEDIR SENHA DO GOOGLE) -->
+      <!-- PRÉVIA DA FOTO CAPTURADA PELA CÂMERA -->
+      <div id="imagePreviewContainer" class="hidden relative mb-2 p-1.5 bg-black/60 border border-jarvis-cyan rounded-xl flex items-center gap-2">
+        <img id="imagePreview" src="" class="w-14 h-14 object-cover rounded-lg border border-slate-700" />
+        <div class="flex-1 text-[11px] text-slate-300 truncate">
+          <span>📷 Foto pronta para análise da IA</span>
+        </div>
+        <button type="button" onclick="clearAttachedImage()" class="p-1.5 text-slate-400 hover:text-jarvis-red">✕</button>
+      </div>
+
+      <!-- BARRA DE ENTRADA DO CHAT -->
       <div class="pt-2">
         <form onsubmit="sendMessage(event)" class="flex items-center gap-2" autocomplete="off">
+          <!-- BOTÃO CÂMERA -->
+          <button type="button" onclick="triggerCameraInput()" class="p-3 bg-black/40 border border-slate-700 hover:border-jarvis-cyan rounded-xl text-slate-300" title="Tirar Foto">
+            <svg class="w-5 h-5 text-jarvis-cyan" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 13a3 3 0 11-6 0 3 3 0 016 0z"></path></svg>
+          </button>
+          <input type="file" id="cameraFileInput" accept="image/*" capture="environment" onchange="handleCameraPhoto(event)" class="hidden" />
+
+          <!-- BOTÃO MICROFONE -->
           <button type="button" id="voiceBtn" onclick="toggleVoice()" class="p-3 bg-black/40 border border-slate-700 rounded-xl text-jarvis-cyan">
             <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11a7 7 0 01-7 7m0 0a7 7 0 01-7-7m7 7v4m0 0H8m4 0h4m-4-8a3 3 0 01-3-3V5a3 3 0 116 0v6a3 3 0 01-3 3z"></path></svg>
           </button>
-          <input id="promptInput" type="text" name="chat_query_free" autocomplete="off" autocorrect="off" autocapitalize="sentences" spellcheck="false" class="flex-1 bg-black/50 border border-slate-700 rounded-xl px-4 py-3 text-xs text-white focus:outline-none focus:border-jarvis-cyan" placeholder="Digite uma ordem ou pergunta..." />
+
+          <input id="promptInput" type="text" name="chat_query_free" autocomplete="off" autocorrect="off" autocapitalize="sentences" spellcheck="false" class="flex-1 bg-black/50 border border-slate-700 rounded-xl px-4 py-3 text-xs text-white focus:outline-none focus:border-jarvis-cyan" placeholder="Pergunte ou envie uma foto..." />
+          
           <button type="submit" class="p-3 bg-jarvis-cyan text-black rounded-xl font-bold">
             <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8"></path></svg>
           </button>
@@ -142,11 +186,11 @@
       <div class="flex items-center justify-between pb-2 mb-3 border-b border-slate-800">
         <div>
           <h2 class="font-orbitron font-bold text-jarvis-cyan text-sm">TAREFAS & METAS</h2>
-          <p class="text-[10px] text-slate-400">Seu organizador de tarefas e compromissos com o Jarvis</p>
+          <p class="text-[10px] text-slate-400">Seu organizador de tarefas com o Jarvis</p>
         </div>
       </div>
       <div class="flex gap-2 mb-3">
-        <input id="taskInput" type="text" placeholder="Ex: Comprar passagens, Reunião com cliente..." class="flex-1 bg-black/40 border border-slate-700 rounded-lg px-3 py-2 text-xs text-white focus:outline-none focus:border-jarvis-cyan" />
+        <input id="taskInput" type="text" placeholder="Ex: Criar app Android, Reunião com cliente..." class="flex-1 bg-black/40 border border-slate-700 rounded-lg px-3 py-2 text-xs text-white focus:outline-none focus:border-jarvis-cyan" />
         <select id="taskPriority" class="bg-black/40 border border-slate-700 rounded-lg px-2 text-xs text-slate-300">
           <option value="normal">Normal</option>
           <option value="urgente">Urgente</option>
@@ -211,58 +255,32 @@
   <div id="profileModal" class="hidden fixed inset-0 bg-black/80 backdrop-blur-md z-50 flex items-center justify-center p-4">
     <div class="bg-jarvis-card border border-jarvis-cyan/30 rounded-2xl w-full max-w-sm p-5 shadow-2xl relative max-h-[90vh] overflow-y-auto scrollbar-none">
       <button onclick="closeProfileModal()" class="absolute top-4 right-4 text-slate-400 hover:text-white">✕</button>
-      <h3 class="font-orbitron font-bold text-jarvis-cyan text-sm mb-1">Perfil & Segurança Mestre</h3>
-      <p class="text-[10px] text-slate-400 mb-4">Foto, alteração segura de senha e chaves de IA.</p>
+      <h3 class="font-orbitron font-bold text-jarvis-cyan text-sm mb-1">Central de Inteligência do Mestre</h3>
+      <p class="text-[10px] text-slate-400 mb-4">Gerencie sua chave do Google Gemini e suas IAs.</p>
 
       <div class="space-y-4">
-        <!-- FOTO -->
-        <div class="flex items-center gap-3 p-3 bg-black/40 border border-slate-800 rounded-xl">
-          <div id="profilePreview" class="w-12 h-12 rounded-full border border-jarvis-cyan bg-slate-900 flex items-center justify-center overflow-hidden">
-            <span class="text-xs font-bold text-jarvis-cyan font-orbitron">IN</span>
-          </div>
-          <div class="flex-1">
-            <label class="text-[10px] font-bold text-slate-300 block mb-1">Foto de Perfil</label>
-            <input type="file" accept="image/*" onchange="handleAvatarUpload(event)" class="text-[10px] text-slate-400 file:mr-2 file:py-1 file:px-2 file:rounded-md file:border-0 file:text-[10px] file:bg-jarvis-cyan file:text-black file:font-bold" />
-          </div>
-        </div>
-
-        <!-- ALTERAR SENHA COM DUPLA CONFIRMAÇÃO -->
-        <div class="p-3 bg-black/40 border border-slate-800 rounded-xl">
-          <label class="text-[10px] font-bold text-slate-300 block mb-1">Alterar Minha Senha</label>
-          <input id="newPasswordInput" type="password" placeholder="Nova senha segura..." class="w-full bg-black/50 border border-slate-700 rounded-lg px-3 py-1.5 text-xs text-white focus:outline-none focus:border-jarvis-cyan mb-2" />
-          <input id="confirmPasswordInput" type="password" placeholder="Confirme a nova senha..." class="w-full bg-black/50 border border-slate-700 rounded-lg px-3 py-1.5 text-xs text-white focus:outline-none focus:border-jarvis-cyan mb-2" />
-          <button onclick="changePassword()" class="w-full bg-slate-800 hover:bg-slate-700 text-slate-200 py-1.5 rounded-lg text-[10px] font-bold">Confirmar e Atualizar Senha</button>
-        </div>
-
-        <!-- AUTENTICAÇÃO SMS / CELULAR -->
-        <div class="p-3 bg-black/40 border border-slate-800 rounded-xl">
-          <div class="flex items-center justify-between mb-1">
-            <label class="text-[10px] font-bold text-slate-300">Autenticação por Celular / 2FA</label>
-            <span class="text-[9px] text-jarvis-green font-bold">ATIVADA</span>
-          </div>
-          <input id="userPhoneInput" type="tel" placeholder="+55 DD 9XXXX-XXXX" class="w-full bg-black/50 border border-slate-700 rounded-lg px-3 py-1.5 text-xs text-white focus:outline-none focus:border-jarvis-cyan mb-2" />
-          <button onclick="savePhone()" class="w-full bg-slate-800 hover:bg-slate-700 text-slate-200 py-1.5 rounded-lg text-[10px] font-bold">Salvar Número</button>
-        </div>
-
-        <!-- CHAVES IA COM LINKS DIRETOS PARA OBTER O TOKEN EM 1 CLIQUE -->
-        <div class="p-3 bg-black/40 border border-slate-800 rounded-xl space-y-2.5">
+        <!-- TESTADOR / CONFIGURADOR DA CHAVE GEMINI -->
+        <div class="p-3 bg-black/50 border border-jarvis-cyan/40 rounded-xl space-y-2">
           <div class="flex items-center justify-between">
-            <label class="text-[10px] font-bold text-jarvis-cyan block">Chaves de API das IAs</label>
-            <span class="text-[9px] text-slate-400">Tokens Pessoais</span>
+            <span class="text-[11px] font-bold text-jarvis-cyan">Google Gemini API Key</span>
+            <a href="https://aistudio.google.com/app/apikey" target="_blank" class="text-[10px] text-amber-400 hover:underline font-bold">🔗 Gerar Chave Grátis</a>
           </div>
-
-          <div>
-            <div class="flex items-center justify-between mb-0.5">
-              <span class="text-[9px] text-slate-300 font-bold">Google Gemini API</span>
-              <a href="https://aistudio.google.com/app/apikey" target="_blank" class="text-[9px] text-jarvis-cyan hover:underline font-bold">🔗 Obter Chave Grátis</a>
-            </div>
-            <input id="keyGemini" type="password" placeholder="AIzaSy..." class="w-full bg-black/50 border border-slate-700 rounded px-2.5 py-1 text-xs text-white focus:outline-none focus:border-jarvis-cyan" />
+          <input id="keyGemini" type="text" placeholder="Cole aqui sua chave (começa com AIzaSy...)" class="w-full bg-black/70 border border-slate-700 rounded-lg px-3 py-2 text-xs text-white focus:outline-none focus:border-jarvis-cyan" />
+          
+          <div class="flex gap-2 pt-1">
+            <button onclick="testAndSaveGeminiKey()" class="flex-1 bg-jarvis-cyan text-black font-orbitron font-bold py-2 rounded-lg text-xs hover:shadow-[0_0_15px_rgba(0,240,255,0.6)]">
+              TESTAR & SALVAR CHAVE
+            </button>
           </div>
+          <div id="keyStatusFeedback" class="hidden text-[10px] p-2 rounded"></div>
+        </div>
 
+        <!-- OUTRAS IAs (CLAUDE & OPENAI) -->
+        <div class="p-3 bg-black/40 border border-slate-800 rounded-xl space-y-2">
           <div>
             <div class="flex items-center justify-between mb-0.5">
               <span class="text-[9px] text-slate-300 font-bold">Anthropic Claude API</span>
-              <a href="https://console.anthropic.com/settings/keys" target="_blank" class="text-[9px] text-jarvis-cyan hover:underline font-bold">🔗 Obter Chave</a>
+              <a href="https://console.anthropic.com/settings/keys" target="_blank" class="text-[9px] text-jarvis-cyan hover:underline">🔗 Pegar Chave</a>
             </div>
             <input id="keyClaude" type="password" placeholder="sk-ant-api..." class="w-full bg-black/50 border border-slate-700 rounded px-2.5 py-1 text-xs text-white focus:outline-none focus:border-jarvis-cyan" />
           </div>
@@ -270,12 +288,31 @@
           <div>
             <div class="flex items-center justify-between mb-0.5">
               <span class="text-[9px] text-slate-300 font-bold">OpenAI ChatGPT API</span>
-              <a href="https://platform.openai.com/api-keys" target="_blank" class="text-[9px] text-jarvis-cyan hover:underline font-bold">🔗 Obter Chave</a>
+              <a href="https://platform.openai.com/api-keys" target="_blank" class="text-[9px] text-jarvis-cyan hover:underline">🔗 Pegar Chave</a>
             </div>
             <input id="keyOpenAI" type="password" placeholder="sk-proj-..." class="w-full bg-black/50 border border-slate-700 rounded px-2.5 py-1 text-xs text-white focus:outline-none focus:border-jarvis-cyan" />
           </div>
+          <button onclick="saveOtherKeys()" class="w-full bg-slate-800 hover:bg-slate-700 text-slate-200 py-1.5 rounded-lg text-[10px] font-bold">Salvar Claude & ChatGPT</button>
+        </div>
 
-          <button onclick="saveApiKeys()" class="w-full bg-jarvis-cyan text-black py-1.5 rounded-lg text-[11px] font-orbitron font-bold mt-1">Salvar Chaves</button>
+        <!-- FOTO E ALTERAÇÃO DE SENHA -->
+        <div class="p-3 bg-black/40 border border-slate-800 rounded-xl space-y-3">
+          <div class="flex items-center gap-3">
+            <div id="profilePreview" class="w-10 h-10 rounded-full border border-jarvis-cyan bg-slate-900 flex items-center justify-center overflow-hidden">
+              <span class="text-xs font-bold text-jarvis-cyan font-orbitron">IN</span>
+            </div>
+            <div class="flex-1">
+              <label class="text-[10px] font-bold text-slate-300 block mb-0.5">Foto de Perfil</label>
+              <input type="file" accept="image/*" onchange="handleAvatarUpload(event)" class="text-[10px] text-slate-400 file:mr-2 file:py-0.5 file:px-2 file:rounded file:border-0 file:text-[9px] file:bg-jarvis-cyan file:text-black file:font-bold" />
+            </div>
+          </div>
+
+          <div>
+            <label class="text-[10px] font-bold text-slate-300 block mb-1">Alterar Senha Mestre</label>
+            <input id="newPasswordInput" type="password" placeholder="Nova senha..." class="w-full bg-black/50 border border-slate-700 rounded px-2.5 py-1 text-xs text-white focus:outline-none focus:border-jarvis-cyan mb-1.5" />
+            <input id="confirmPasswordInput" type="password" placeholder="Confirme a nova senha..." class="w-full bg-black/50 border border-slate-700 rounded px-2.5 py-1 text-xs text-white focus:outline-none focus:border-jarvis-cyan mb-2" />
+            <button onclick="changePassword()" class="w-full bg-slate-800 hover:bg-slate-700 text-slate-200 py-1.5 rounded text-[10px] font-bold">Confirmar Nova Senha</button>
+          </div>
         </div>
       </div>
     </div>
@@ -289,8 +326,10 @@
     let currentModel = 'gemini';
     let currentUser = null;
     let isListening = false;
+    let isLiveMode = false;
     let speechRec = null;
-    let voiceGender = localStorage.getItem('jarvis_voice_gender') || 'female';
+    let voiceMode = localStorage.getItem('jarvis_voice_mode') || 'jarvis';
+    let currentAttachedBase64 = null;
     let lastGeneratedInvite = null;
 
     async function hashText(text) {
@@ -326,7 +365,15 @@
       if (avatarSaved) {
         document.getElementById('headerAvatar').innerHTML = `<img src="${avatarSaved}" class="w-full h-full object-cover" />`;
       }
-      loadKeys(); loadTasks();
+      
+      checkApiKeyBanner();
+      loadSavedKeys();
+      loadTasks();
+    }
+
+    function checkApiKeyBanner() {
+      const key = localStorage.getItem('jarvis_key_gemini_' + currentUser.email);
+      document.getElementById('apiKeyBanner').classList.toggle('hidden', !!key);
     }
 
     async function handleLogin(e) {
@@ -367,6 +414,7 @@
     }
 
     function handleLogout() {
+      stopSpeaking();
       localStorage.removeItem('jarvis_session');
       currentUser = null;
       document.getElementById('loginEmail').value = '';
@@ -393,62 +441,143 @@
       btn.className = 'model-btn active py-1.5 px-1 rounded-lg text-black bg-jarvis-cyan font-orbitron font-bold text-[10px]';
     }
 
-    function toggleVoiceGender() {
-      voiceGender = voiceGender === 'female' ? 'male' : 'female';
-      localStorage.setItem('jarvis_voice_gender', voiceGender);
+    function cycleVoice() {
+      if (voiceMode === 'jarvis') voiceMode = 'female';
+      else if (voiceMode === 'female') voiceMode = 'mute';
+      else voiceMode = 'jarvis';
+      
+      localStorage.setItem('jarvis_voice_mode', voiceMode);
       updateVoiceDisplay();
-      speakText(voiceGender === 'female' ? "Voz feminina natural ativada." : "Voz masculina ativada. Às suas ordens, chefe.");
+      if (voiceMode !== 'mute') {
+        speakText(voiceMode === 'jarvis' ? "Voz Jarvis ativada." : "Voz natural ativada.");
+      }
     }
 
     function updateVoiceDisplay() {
-      const isFem = voiceGender === 'female';
-      document.getElementById('voiceGenderIcon').innerText = isFem ? '👩' : '👨';
-      document.getElementById('voiceGenderText').innerText = isFem ? 'Voz Feminina' : 'Voz Masculina';
+      const icon = document.getElementById('voiceIcon');
+      const label = document.getElementById('voiceLabel');
+      if (voiceMode === 'jarvis') {
+        icon.innerText = '👨'; label.innerText = 'Jarvis';
+      } else if (voiceMode === 'female') {
+        icon.innerText = '👩'; label.innerText = 'Feminina';
+      } else {
+        icon.innerText = '🔇'; label.innerText = 'Mudo';
+      }
     }
 
     function speakText(text) {
-      if (!('speechSynthesis' in window)) return;
+      if (!('speechSynthesis' in window) || voiceMode === 'mute') return;
       window.speechSynthesis.cancel();
-      const u = new SpeechSynthesisUtterance(text.replace(/[*#]/g, ''));
+
+      const u = new SpeechSynthesisUtterance(text.replace(/[*#_`]/g, ''));
       u.lang = 'pt-BR';
 
-      if (voiceGender === 'female') {
-        u.pitch = 1.15;
-        u.rate = 1.02;
+      if (voiceMode === 'female') {
+        u.pitch = 1.12; u.rate = 1.05;
       } else {
-        u.pitch = 0.88;
-        u.rate = 0.98;
+        u.pitch = 0.85; u.rate = 1.0;
       }
 
       const voices = window.speechSynthesis.getVoices();
       const ptVoice = voices.find(v => v.lang.includes('pt-BR') || v.lang.includes('pt_BR'));
       if (ptVoice) u.voice = ptVoice;
 
+      const stopBtn = document.getElementById('btnStopSpeech');
+      u.onstart = () => { stopBtn.classList.remove('hidden'); };
+      u.onend = () => { 
+        stopBtn.classList.add('hidden'); 
+        if (isLiveMode) {
+          setTimeout(startVoiceListening, 400);
+        }
+      };
+      u.onerror = () => { stopBtn.classList.add('hidden'); };
+
       window.speechSynthesis.speak(u);
+    }
+
+    function stopSpeaking() {
+      if ('speechSynthesis' in window) {
+        window.speechSynthesis.cancel();
+      }
+      document.getElementById('btnStopSpeech').classList.add('hidden');
+      if (isLiveMode) isLiveMode = false;
+      updateLiveModeUI();
+    }
+
+    function toggleLiveConversation() {
+      isLiveMode = !isLiveMode;
+      updateLiveModeUI();
+      if (isLiveMode) {
+        speakText("Modo Live ativado. Pode falar comigo direto.");
+        setTimeout(startVoiceListening, 1800);
+      } else {
+        stopSpeaking();
+      }
+    }
+
+    function updateLiveModeUI() {
+      const dot = document.getElementById('liveDot');
+      const btn = document.getElementById('btnLiveMode');
+      if (isLiveMode) {
+        dot.className = "w-2 h-2 rounded-full bg-jarvis-cyan animate-ping";
+        btn.className = "px-2.5 py-2 rounded-xl border border-jarvis-cyan bg-jarvis-cyan/20 text-jarvis-cyan text-[10px] font-bold font-orbitron flex items-center gap-1 transition live-glow";
+      } else {
+        dot.className = "w-2 h-2 rounded-full bg-slate-500";
+        btn.className = "px-2.5 py-2 rounded-xl border border-slate-700 bg-black/40 text-[10px] font-bold font-orbitron flex items-center gap-1 transition text-slate-400";
+      }
+    }
+
+    function triggerCameraInput() {
+      document.getElementById('cameraFileInput').click();
+    }
+
+    function handleCameraPhoto(e) {
+      const file = e.target.files[0];
+      if (!file) return;
+      const reader = new FileReader();
+      reader.onload = (event) => {
+        const fullBase64 = event.target.result;
+        currentAttachedBase64 = fullBase64.split(',')[1];
+        document.getElementById('imagePreview').src = fullBase64;
+        document.getElementById('imagePreviewContainer').classList.remove('hidden');
+        document.getElementById('promptInput').placeholder = "Pergunte sobre esta imagem...";
+        document.getElementById('promptInput').focus();
+      };
+      reader.readAsDataURL(file);
+    }
+
+    function clearAttachedImage() {
+      currentAttachedBase64 = null;
+      document.getElementById('imagePreviewContainer').classList.add('hidden');
+      document.getElementById('cameraFileInput').value = '';
+      document.getElementById('promptInput').placeholder = "Pergunte ou envie uma foto...";
     }
 
     async function sendMessage(e) {
       if (e) e.preventDefault();
       const input = document.getElementById('promptInput');
       const text = input.value.trim();
-      if (!text) return;
-      input.value = '';
+      const imageToSend = currentAttachedBase64;
 
-      addBubble(text, 'user');
+      if (!text && !imageToSend) return;
+      input.value = '';
+      clearAttachedImage();
+
+      addBubble(text || "📷 [Foto enviada para análise]", 'user', '', imageToSend);
       document.getElementById('typingStatus').classList.remove('hidden');
 
       try {
-        const responseText = await callAI(text, currentModel);
+        const responseText = await callRealAI(text || "Analise e descreva detalhadamente esta imagem.", currentModel, imageToSend);
         addBubble(responseText, 'assistant', currentModel.toUpperCase());
         speakText(responseText);
       } catch (err) {
-        addBubble("Falha: " + (err.message || "Erro de conexão"), 'assistant', 'ERRO');
+        addBubble("⚠️ " + (err.message || "Falha na conexão com a IA"), 'assistant', 'ERRO');
       } finally {
         document.getElementById('typingStatus').classList.add('hidden');
       }
     }
 
-    function addBubble(content, role, badge = '') {
+    function addBubble(content, role, badge = '', imageBase64 = null) {
       const container = document.getElementById('chatMessages');
       const wrap = document.createElement('div');
       wrap.className = `flex flex-col ${role === 'user' ? 'items-end' : 'items-start'}`;
@@ -460,8 +589,18 @@
       const bubble = document.createElement('div');
       bubble.className = role === 'user'
         ? 'max-w-[85%] p-3 rounded-2xl rounded-br-none bg-jarvis-cyan/20 border border-jarvis-cyan/40 text-xs text-white'
-        : 'max-w-[85%] p-3 rounded-2xl rounded-bl-none bg-jarvis-card border border-slate-800 text-xs text-slate-200 shadow-md leading-relaxed';
-      bubble.innerText = content;
+        : 'max-w-[85%] p-3.5 rounded-2xl rounded-bl-none bg-jarvis-card border border-slate-800 text-xs text-slate-200 shadow-md leading-relaxed whitespace-pre-wrap';
+
+      if (imageBase64) {
+        const img = document.createElement('img');
+        img.src = "data:image/jpeg;base64," + imageBase64;
+        img.className = "w-44 h-32 object-cover rounded-lg mb-2 border border-slate-700";
+        bubble.appendChild(img);
+      }
+
+      const textNode = document.createElement('div');
+      textNode.innerText = content;
+      bubble.appendChild(textNode);
 
       wrap.appendChild(header);
       wrap.appendChild(bubble);
@@ -469,74 +608,130 @@
       container.scrollTop = container.scrollHeight;
     }
 
-    async function callAI(prompt, model) {
+    async function callRealAI(prompt, model, imageBase64 = null) {
       const geminiKey = localStorage.getItem('jarvis_key_gemini_' + currentUser.email) || '';
-      const claudeKey = localStorage.getItem('jarvis_key_claude_' + currentUser.email) || '';
-      const openaiKey = localStorage.getItem('jarvis_key_openai_' + currentUser.email) || '';
+      
+      if (!geminiKey) {
+        throw new Error("Sua chave do Google Gemini não está conectada! Toque no ícone de configurações ⚙️ no topo para colar e salvar sua chave gratuita.");
+      }
 
-      if (geminiKey && (model === 'gemini' || model === 'trio')) {
-        try {
-          const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${geminiKey}`;
-          const res = await fetch(url, {
-            method: 'POST',
-            headers: {'Content-Type': 'application/json'},
-            body: JSON.stringify({ contents: [{ parts: [{ text: prompt }] }] })
-          });
-          const data = await res.json();
-          if (data.candidates?.[0]?.content?.parts?.[0]?.text) {
-            return data.candidates[0].content.parts[0].text;
+      const parts = [{ text: prompt }];
+      if (imageBase64) {
+        parts.push({
+          inline_data: {
+            mime_type: "image/jpeg",
+            data: imageBase64
           }
-        } catch(e) {}
+        });
       }
 
-      if (claudeKey && model === 'claude') {
-        try {
-          const res = await fetch("https://api.anthropic.com/v1/messages", {
-            method: "POST",
-            headers: { "Content-Type": "application/json", "x-api-key": claudeKey, "anthropic-version": "2023-06-01", "dangerously-allow-browser": "true" },
-            body: JSON.stringify({ model: "claude-3-5-haiku-20241022", max_tokens: 600, messages: [{ role: "user", content: prompt }] })
-          });
-          const data = await res.json();
-          if (data.content?.[0]?.text) return data.content[0].text;
-        } catch(e) {}
+      const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${geminiKey}`;
+      
+      const res = await fetch(url, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ contents: [{ parts }] })
+      });
+
+      const data = await res.json();
+      
+      if (!res.ok) {
+        const errDetail = data.error?.message || `HTTP ${res.status}`;
+        throw new Error(`Google API: ${errDetail}`);
       }
 
-      if (openaiKey && model === 'openai') {
-        try {
-          const res = await fetch("https://api.openai.com/v1/chat/completions", {
-            method: "POST",
-            headers: { "Content-Type": "application/json", "Authorization": `Bearer ${openaiKey}` },
-            body: JSON.stringify({ model: "gpt-4o-mini", messages: [{ role: "user", content: prompt }], max_tokens: 600 })
-          });
-          const data = await res.json();
-          if (data.choices?.[0]?.message?.content) return data.choices[0].message.content;
-        } catch(e) {}
+      const reply = data.candidates?.[0]?.content?.parts?.[0]?.text;
+      if (!reply) throw new Error("A IA não retornou texto.");
+      return reply;
+    }
+
+    async function testAndSaveGeminiKey() {
+      const key = document.getElementById('keyGemini').value.trim();
+      const feedback = document.getElementById('keyStatusFeedback');
+      feedback.classList.remove('hidden');
+
+      if (!key) {
+        feedback.className = "text-[10px] p-2 rounded bg-jarvis-red/20 text-jarvis-red border border-jarvis-red";
+        feedback.innerText = "Por favor, cole sua chave de API.";
+        return;
       }
 
-      const p = prompt.toLowerCase();
-      if (p.includes('oi') || p.includes('olá') || p.includes('bom dia') || p.includes('boa tarde') || p.includes('boa noite') || p.includes('fala jarvis')) {
-        return `Olá, Ítalo! Estou 100% online e operacional aqui no seu celular. Você pode me pedir para criar tarefas, responder dúvidas ou coordenar suas ideias.`;
-      }
-      if (p.includes('quem é você') || p.includes('o que você faz')) {
-        return `Eu sou o seu J.A.R.V.I.S., seu assistente e sistema operacional inteligente em nuvem. Posso conversar por voz, gerenciar suas tarefas e integrar com Gemini, Claude e ChatGPT.`;
-      }
-      if (p.includes('tarefa') || p.includes('protocolo') || p.includes('lembrete')) {
-        return `Você pode gerenciar todas as suas metas na aba 'TAREFAS' aqui embaixo. Basta digitar o título e escolher a prioridade!`;
-      }
+      feedback.className = "text-[10px] p-2 rounded bg-amber-500/20 text-amber-300 border border-amber-500 animate-pulse";
+      feedback.innerText = "Testando conexão com o Google Gemini...";
 
-      return `Entendido, Ítalo! Registrei sua solicitação: "${prompt}". Para liberar o raciocínio ilimitado e profundo na internet com a sua cota do Gemini Studio, toque no ícone de perfil e adicione sua chave de API pelo botão de link direto!`;
+      try {
+        const testUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${key}`;
+        const res = await fetch(testUrl, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ contents: [{ parts: [{ text: "Diga 'OK'" }] }] })
+        });
+        const data = await res.json();
+
+        if (res.ok && data.candidates) {
+          localStorage.setItem('jarvis_key_gemini_' + currentUser.email, key);
+          feedback.className = "text-[10px] p-2 rounded bg-jarvis-green/20 text-jarvis-green border border-jarvis-green font-bold";
+          feedback.innerText = "✔ Chave VÁLIDA e CONECTADA com sucesso! O JARVIS já está pronto.";
+          checkApiKeyBanner();
+          setTimeout(closeProfileModal, 1500);
+        } else {
+          feedback.className = "text-[10px] p-2 rounded bg-jarvis-red/20 text-jarvis-red border border-jarvis-red";
+          feedback.innerText = "❌ Chave Inválida: " + (data.error?.message || "Verifique se copiou a chave correta no Google AI Studio.");
+        }
+      } catch(err) {
+        feedback.className = "text-[10px] p-2 rounded bg-jarvis-red/20 text-jarvis-red border border-jarvis-red";
+        feedback.innerText = "❌ Falha de Conexão: " + err.message;
+      }
+    }
+
+    function saveOtherKeys() {
+      const claude = document.getElementById('keyClaude').value.trim();
+      const openai = document.getElementById('keyOpenAI').value.trim();
+      localStorage.setItem('jarvis_key_claude_' + currentUser.email, claude);
+      localStorage.setItem('jarvis_key_openai_' + currentUser.email, openai);
+      alert("Chaves salvas com sucesso!");
     }
 
     function toggleVoice() {
+      if (isListening) stopVoiceListening();
+      else startVoiceListening();
+    }
+
+    function startVoiceListening() {
       const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
-      if (!SR) return alert("Navegador sem suporte a voz.");
-      if (isListening) { speechRec.stop(); return; }
+      if (!SR) return alert("Navegador sem suporte a reconhecimento de voz.");
+      
+      stopSpeaking();
+
       speechRec = new SR();
       speechRec.lang = 'pt-BR';
-      speechRec.onstart = () => { isListening = true; document.getElementById('voiceBtn').classList.add('bg-jarvis-red', 'text-white', 'animate-pulse'); };
-      speechRec.onresult = (e) => { document.getElementById('promptInput').value = e.results[0][0].transcript; sendMessage(); };
-      speechRec.onend = () => { isListening = false; document.getElementById('voiceBtn').classList.remove('bg-jarvis-red', 'text-white', 'animate-pulse'); };
+      speechRec.continuous = false;
+      speechRec.interimResults = false;
+
+      speechRec.onstart = () => {
+        isListening = true;
+        document.getElementById('voiceBtn').classList.add('bg-jarvis-red', 'text-white', 'animate-pulse');
+      };
+      speechRec.onresult = (e) => {
+        const t = e.results[0][0].transcript;
+        document.getElementById('promptInput').value = t;
+        sendMessage();
+      };
+      speechRec.onend = () => {
+        isListening = false;
+        document.getElementById('voiceBtn').classList.remove('bg-jarvis-red', 'text-white', 'animate-pulse');
+      };
+      speechRec.onerror = () => {
+        isListening = false;
+        document.getElementById('voiceBtn').classList.remove('bg-jarvis-red', 'text-white', 'animate-pulse');
+      };
       speechRec.start();
+    }
+
+    function stopVoiceListening() {
+      if (speechRec) speechRec.stop();
+      isListening = false;
+      document.getElementById('voiceBtn').classList.remove('bg-jarvis-red', 'text-white', 'animate-pulse');
     }
 
     function loadTasks() {
@@ -610,7 +805,7 @@
     function sendViaEmail() {
       if (!lastGeneratedInvite) return;
       const subject = encodeURIComponent("Convite de Acesso Exclusivo: JARVIS OS");
-      const body = encodeURIComponent(`Olá!\n\nVocê recebeu acesso exclusivo ao sistema JARVIS de Ítalo Nobre.\n\nAcesse o link: ${lastGeneratedInvite.link}\nE-mail: ${lastGeneratedInvite.email}\nSenha Provisória: ${lastGeneratedInvite.pass}\n\nAo entrar, você poderá configurar sua própria senha no perfil.`);
+      const body = encodeURIComponent(`Olá!\n\nVocê recebeu acesso exclusivo ao sistema JARVIS de Ítalo Nobre.\n\nAcesse o link: ${lastGeneratedInvite.link}\nE-mail: ${lastGeneratedInvite.email}\nSenha Provisória: ${lastGeneratedInvite.pass}`);
       window.open(`mailto:${lastGeneratedInvite.email}?subject=${subject}&body=${body}`, '_blank');
     }
 
@@ -667,37 +862,18 @@
       const newP = document.getElementById('newPasswordInput').value.trim();
       const confirmP = document.getElementById('confirmPasswordInput').value.trim();
       if (!newP || !confirmP) return alert("Digite e confirme a nova senha.");
-      if (newP !== confirmP) return alert("As senhas não coincidem! Digite a mesma senha nos dois campos.");
+      if (newP !== confirmP) return alert("As senhas não coincidem!");
       const newHash = await hashText(newP);
       localStorage.setItem('jarvis_hash_' + currentUser.email, newHash);
-      alert("Senha mestre confirmada e atualizada com sucesso!");
+      alert("Senha mestre atualizada com sucesso!");
       document.getElementById('newPasswordInput').value = '';
       document.getElementById('confirmPasswordInput').value = '';
     }
 
-    function savePhone() {
-      const phone = document.getElementById('userPhoneInput').value.trim();
-      localStorage.setItem('jarvis_phone_' + currentUser.email, phone);
-      alert("Número celular e autenticação salvos!");
-    }
-
-    function loadKeys() {
+    function loadSavedKeys() {
       document.getElementById('keyGemini').value = localStorage.getItem('jarvis_key_gemini_' + currentUser.email) || '';
       document.getElementById('keyClaude').value = localStorage.getItem('jarvis_key_claude_' + currentUser.email) || '';
       document.getElementById('keyOpenAI').value = localStorage.getItem('jarvis_key_openai_' + currentUser.email) || '';
-      const p = localStorage.getItem('jarvis_phone_' + currentUser.email);
-      if (p) document.getElementById('userPhoneInput').value = p;
-    }
-
-    function saveApiKeys() {
-      const gemini = document.getElementById('keyGemini').value.trim();
-      const claude = document.getElementById('keyClaude').value.trim();
-      const openai = document.getElementById('keyOpenAI').value.trim();
-      localStorage.setItem('jarvis_key_gemini_' + currentUser.email, gemini);
-      localStorage.setItem('jarvis_key_claude_' + currentUser.email, claude);
-      localStorage.setItem('jarvis_key_openai_' + currentUser.email, openai);
-      alert("Chaves salvas com sucesso!");
-      closeProfileModal();
     }
   </script>
 </body>
