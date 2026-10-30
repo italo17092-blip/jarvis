@@ -126,7 +126,7 @@
 
     <!-- BANNER DE STATUS DO MODELO CONECTADO -->
     <div id="modelStatusBanner" class="px-3 py-1 bg-black/60 border-b border-slate-800 text-[10px] text-slate-400 flex items-center justify-between">
-      <span id="activeModelLabel">⚡ Motor Ativo: Conectando...</span>
+      <span id="activeModelLabel">⚡ Modelo: Pronto para responder</span>
       <span class="text-jarvis-green font-bold">ONLINE</span>
     </div>
 
@@ -143,7 +143,7 @@
       </div>
 
       <div id="typingStatus" class="hidden py-1 px-3 text-[11px] text-jarvis-cyan flex items-center gap-2 animate-pulse">
-        <span>⚡ JARVIS processando com Google AI...</span>
+        <span>⚡ JARVIS processando resposta com Google AI...</span>
       </div>
 
       <!-- PRÉVIA DA CÂMERA -->
@@ -327,14 +327,15 @@
     let currentAttachedBase64 = null;
     let lastGeneratedInvite = null;
 
-    // Lista oficial de modelos Google Gemini para auto-resolução em cascata
-    const GEMINI_MODELS = [
-      'gemini-2.5-flash',
+    // Modelos do Google com cota GRATUITA oficial (Gemini 2.0 Flash lidera a lista)
+    const CANDIDATE_GEMINI_MODELS = [
       'gemini-2.0-flash',
-      'gemini-flash-latest',
-      'gemini-1.5-flash-latest',
-      'gemini-2.5-pro',
-      'gemini-pro'
+      'gemini-2.0-flash-lite',
+      'gemini-1.5-flash',
+      'gemini-1.5-flash-8b',
+      'gemini-1.5-pro',
+      'gemini-2.5-flash',
+      'gemini-flash-latest'
     ];
 
     async function hashText(text) {
@@ -377,7 +378,7 @@
     }
 
     function updateModelLabel() {
-      const active = localStorage.getItem('jarvis_active_gemini_model') || 'gemini-2.5-flash';
+      const active = localStorage.getItem('jarvis_active_gemini_model') || 'gemini-2.0-flash';
       document.getElementById('activeModelLabel').innerText = `⚡ Motor Google: ${active}`;
     }
 
@@ -492,7 +493,7 @@
       u.onend = () => { 
         stopBtn.classList.add('hidden'); 
         if (isLiveMode) {
-          setTimeout(startVoiceListening, 400);
+          setTimeout(startVoiceListening, 500);
         }
       };
       u.onerror = () => { stopBtn.classList.add('hidden'); };
@@ -613,12 +614,12 @@
       container.scrollTop = container.scrollHeight;
     }
 
-    // CHAMADA ROBUSTA À API DO GOOGLE GEMINI COM AUTO-RESOLUÇÃO DE MODELO
+    // AUTO-RESOLUÇÃO EM CASCATA: CAPTURA 404 E 429 E TESTA MODELOS DO NÍVEL GRATUITO ATÉ FUNCIONAR
     async function callRealAI(prompt, model, imageBase64 = null) {
       const geminiKey = localStorage.getItem('jarvis_key_gemini_' + currentUser.email) || '';
       
       if (!geminiKey) {
-        throw new Error("Sua chave do Google Gemini não está cadastrada! Toque no ícone de configurações ⚙️ para salvar sua chave.");
+        throw new Error("Sua chave do Google Gemini não está cadastrada! Toque na engrenagem ⚙️ no topo para salvar sua chave.");
       }
 
       const parts = [{ text: prompt }];
@@ -631,8 +632,8 @@
         });
       }
 
-      const preferred = localStorage.getItem('jarvis_active_gemini_model') || 'gemini-2.5-flash';
-      const testList = [preferred, ...GEMINI_MODELS.filter(m => m !== preferred)];
+      const preferred = localStorage.getItem('jarvis_active_gemini_model') || 'gemini-2.0-flash';
+      const testList = [preferred, ...CANDIDATE_GEMINI_MODELS.filter(m => m !== preferred)];
 
       let lastError = null;
 
@@ -646,6 +647,7 @@
           });
 
           const data = await res.json();
+
           if (res.ok && data.candidates?.[0]?.content?.parts?.[0]?.text) {
             localStorage.setItem('jarvis_active_gemini_model', modelCandidate);
             updateModelLabel();
@@ -654,15 +656,21 @@
 
           if (data.error) {
             lastError = data.error.message;
-            if (res.status === 404 || data.error.code === 404) {
-              continue;
+            // Se for 404 (modelo não existe) ou 429 / limite 0 na cota gratuita, tenta o próximo modelo!
+            const isQuotaOrNotFound = res.status === 404 || res.status === 429 || 
+                                      data.error.code === 404 || data.error.code === 429 || 
+                                      (data.error.message && (data.error.message.includes('quota') || data.error.message.includes('not found') || data.error.message.includes('limit: 0')));
+            if (isQuotaOrNotFound) {
+              continue; // Tenta o próximo modelo compatível!
             } else {
               throw new Error(data.error.message);
             }
           }
         } catch(err) {
           lastError = err.message;
-          if (err.message && err.message.includes('404')) continue;
+          if (err.message && (err.message.includes('quota') || err.message.includes('not found') || err.message.includes('limit: 0'))) {
+            continue;
+          }
           throw err;
         }
       }
@@ -685,51 +693,31 @@
       feedback.className = "text-[10px] p-2 rounded bg-amber-500/20 text-amber-300 border border-amber-500 animate-pulse";
       feedback.innerText = "Identificando modelos oficiais ativos para sua chave...";
 
-      try {
-        const listUrl = `https://generativelanguage.googleapis.com/v1beta/models?key=${key}`;
-        const listRes = await fetch(listUrl);
-        const listData = await listRes.json();
+      for (const modelCandidate of CANDIDATE_GEMINI_MODELS) {
+        try {
+          const testUrl = `https://generativelanguage.googleapis.com/v1beta/models/${modelCandidate}:generateContent?key=${key}`;
+          const res = await fetch(testUrl, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ contents: [{ parts: [{ text: "Diga 'Conectado'" }] }] })
+          });
+          const data = await res.json();
 
-        let workingModel = 'gemini-2.5-flash';
+          if (res.ok && data.candidates) {
+            localStorage.setItem('jarvis_key_gemini_' + currentUser.email, key);
+            localStorage.setItem('jarvis_active_gemini_model', modelCandidate);
+            updateModelLabel();
 
-        if (listRes.ok && listData.models) {
-          const supported = listData.models
-            .filter(m => m.supportedGenerationMethods && m.supportedGenerationMethods.includes('generateContent'))
-            .map(m => m.name.replace('models/', ''));
-
-          for (const cand of GEMINI_MODELS) {
-            if (supported.includes(cand)) {
-              workingModel = cand;
-              break;
-            }
+            feedback.className = "text-[10px] p-2 rounded bg-jarvis-green/20 text-jarvis-green border border-jarvis-green font-bold";
+            feedback.innerText = `✔ Conectado com sucesso ao modelo [${modelCandidate}]!`;
+            setTimeout(closeProfileModal, 1500);
+            return;
           }
-          if (!workingModel && supported.length > 0) workingModel = supported[0];
-        }
-
-        const testUrl = `https://generativelanguage.googleapis.com/v1beta/models/${workingModel}:generateContent?key=${key}`;
-        const res = await fetch(testUrl, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ contents: [{ parts: [{ text: "Diga 'Conectado'" }] }] })
-        });
-        const data = await res.json();
-
-        if (res.ok && data.candidates) {
-          localStorage.setItem('jarvis_key_gemini_' + currentUser.email, key);
-          localStorage.setItem('jarvis_active_gemini_model', workingModel);
-          updateModelLabel();
-
-          feedback.className = "text-[10px] p-2 rounded bg-jarvis-green/20 text-jarvis-green border border-jarvis-green font-bold";
-          feedback.innerText = `✔ Conectado ao modelo oficial [${workingModel}] com sucesso!`;
-          setTimeout(closeProfileModal, 1500);
-        } else {
-          feedback.className = "text-[10px] p-2 rounded bg-jarvis-red/20 text-jarvis-red border border-jarvis-red";
-          feedback.innerText = "❌ Erro: " + (data.error?.message || "Verifique se a chave está ativa.");
-        }
-      } catch(err) {
-        feedback.className = "text-[10px] p-2 rounded bg-jarvis-red/20 text-jarvis-red border border-jarvis-red";
-        feedback.innerText = "❌ Falha: " + err.message;
+        } catch(e) {}
       }
+
+      feedback.className = "text-[10px] p-2 rounded bg-jarvis-red/20 text-jarvis-red border border-jarvis-red";
+      feedback.innerText = "❌ Chave inválida ou sem cota ativa no Google AI Studio.";
     }
 
     function saveOtherKeys() {
